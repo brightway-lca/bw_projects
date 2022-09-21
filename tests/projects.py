@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from bw2projects import config, projects, ProjectDataset
+from bw2projects import config, projects, ProjectDataset, preferences
 from bw2projects.tests import bw2test
 
 ###
