@@ -24,7 +24,7 @@ setup(
     version=version,
     packages=packages,
     python_requires=">=3.5",
-    author="",
+    author="baali",
     author_email="",
     license="3-clause BSD",
     install_requires=[
@@ -34,7 +34,7 @@ setup(
         "peewee>=3.9.4",
         "wrapt",
     ],
-    url="https://github.com/brightway-lca/brightway2-projects",
+    url="https://github.com/baali/bw2projects.git",
     long_description=open("README.md").read(),
     description=("Tool to manage folders that houses sqlite data "),
     classifiers=[
