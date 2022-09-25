@@ -197,19 +197,19 @@ class ProjectManager(Iterable):
 
     ### Public API
     @property
-    def dir(self):
+    def dir(self) -> Path:
         return Path(self._base_data_dir) / safe_filename(
             self.current, full=self.dataset.full_hash
         )
 
     @property
-    def logs_dir(self):
+    def logs_dir(self) -> Path:
         return Path(self._base_logs_dir) / safe_filename(
             self.current, full=self.dataset.full_hash
         )
 
     @property
-    def output_dir(self):
+    def output_dir(self) -> Path:
         """Get directory for output files.
 
         Uses environment variable ``BRIGHTWAY2_OUTPUT_DIR``; ``preferences['output_dir']``; or directory ``output`` in current project.
