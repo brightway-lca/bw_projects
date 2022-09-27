@@ -171,11 +171,7 @@ class ProjectManager(Iterable):
         # for new metadata stores
         self.read_only = False
         self.create_project(name)
-        self.dataset = ProjectDataset.get(ProjectDataset.name == self._project_name)
-        self._reset_meta()
         self._reset_sqlite3_databases()
-
-        self.dataset = ProjectDataset.get(name=name)
 
         if not lockable():
             pass
@@ -186,10 +182,6 @@ class ProjectManager(Iterable):
                 warnings.warn(READ_ONLY_PROJECT)
         else:
             self.read_only = True
-
-    def _reset_meta(self):
-        for obj in config.metadata:
-            obj.__init__()
 
     def _reset_sqlite3_databases(self):
         for relative_path, substitutable_db in config.sqlite3_databases:
@@ -219,7 +211,7 @@ class ProjectManager(Iterable):
         """
         ep, pp = (
             maybe_path(os.getenv("BRIGHTWAY2_OUTPUT_DIR")),
-            maybe_path(config.p.get("output_dir")),
+            hasattr(config, "p") and maybe_path(config.p.get("output_dir")),
         )
         if ep and ep.is_dir():
             return ep
