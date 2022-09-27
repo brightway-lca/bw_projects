@@ -87,7 +87,7 @@ class ProjectManager(Iterable):
             # migrator = SqliteMigrator(self.db._database)
             # full_hash = BooleanField(default=True)
             # migrate(migrator.add_column("projectdataset", "full_hash", full_hash),)
-        self.set_current("default", update=False)
+        self.set_current("default")
 
     def __iter__(self):
         for project_ds in ProjectDataset.select():
@@ -159,7 +159,7 @@ class ProjectManager(Iterable):
     def twofive(self):
         return bool(self.dataset.data.get("25"))
 
-    def set_current(self, name, writable=True, update=True):
+    def set_current(self, name, writable=True):
         if not self.read_only and lockable() and hasattr(self, "_lock"):
             try:
                 self._lock.release()
@@ -281,7 +281,7 @@ class ProjectManager(Iterable):
         self._base_data_dir = temp_dir / "data"
         self._base_logs_dir = temp_dir / "logs"
         self.db.change_path(":memory:")
-        self.set_current("default", update=False)
+        self.set_current("default")
         self._is_temp_dir = True
         return temp_dir
 
@@ -296,7 +296,7 @@ class ProjectManager(Iterable):
         self._base_logs_dir = self._orig_base_logs_dir
         del self._orig_base_logs_dir
         self.db.change_path(self._base_data_dir / "projects.db")
-        self.set_current("default", update=False)
+        self.set_current("default")
         self._is_temp_dir = False
 
     def delete_project(self, name=None, delete_dir=False):
