@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from bw2projects import config, projects, ProjectDataset, preferences
+from bw2projects import config, projects, ProjectDataset
 from bw2projects.tests import bw2test
 
 ###
@@ -15,6 +15,7 @@ from bw2projects.tests import bw2test
 @bw2test
 def test_project_directories():
     projects.set_current("foo")
+    assert "foo" in projects.dir.name
     for dirname in projects._basic_directories:
         assert os.path.isdir(os.path.join(projects.dir, dirname))
 
@@ -24,6 +25,7 @@ def test_from_env_var():
     dirpath = tempfile.mkdtemp()
     os.environ["BRIGHTWAY2_DIR"] = dirpath
     base, logs = projects._get_base_directories()
+    assert base.name in dirpath
     assert os.path.isdir(base)
     assert os.path.isdir(logs)
     del os.environ["BRIGHTWAY2_DIR"]
@@ -53,28 +55,9 @@ def test_output_env_dir():
 
 
 @bw2test
-def test_output_dir_from_preferences():
-    assert Path(os.getcwd()) != projects.output_dir
-    preferences["output_dir"] = os.getcwd()
-    assert Path(preferences["output_dir"]) == projects.output_dir
-
-
-@bw2test
-def test_invalid_output_dir_from_preferences():
-    preferences["output_dir"] = "nope"
-    assert str(projects.dir) in str(projects.output_dir)
-    del preferences["output_dir"]
-
-
-@bw2test
 def test_directories():
     assert os.path.isdir(projects.dir)
     assert os.path.isdir(projects.logs_dir)
-
-
-@bw2test
-def test_default_project_created():
-    assert "default" in projects
 
 
 @bw2test
@@ -117,11 +100,6 @@ def test_funny_project_names():
             error_found = True
     if error_found:
         raise ValueError("Oops")
-
-
-@bw2test
-def test_report():
-    assert projects.report
 
 
 @bw2test
@@ -240,14 +218,6 @@ def test_set_readonly_project_first_time():
     assert not projects.read_only
 
 
-@bw2test
-def test_set_current_reset_metadata():
-    Database.create(name="foo")
-    assert "foo" in databases
-    projects.set_current("foo")
-    assert "foo" not in databases
-
-
 ###
 ### Test magic methods
 ###
@@ -293,6 +263,7 @@ def test_create_lock_file():
     config.p["lockable"] = True
     projects.set_current("foo", writable=False)
     assert not os.path.isfile(os.path.join(projects.dir, "write-lock"))
+    config.p.pop("lockable")
     projects.set_current("bar")
     assert not os.path.isfile(os.path.join(projects.dir, "write-lock"))
     config.p["lockable"] = True
@@ -308,23 +279,6 @@ def test_lockable_config_missing():
 ###
 ### Copy project
 ###
-
-
-@bw2test
-def test_copy_project():
-    ds = ProjectDataset.get(ProjectDataset.name == projects.current)
-    ds.data["this"] = "that"
-    ds.save()
-
-    Database.create(name="foo")
-    projects.copy_project("another one", False)
-    assert "another one" in projects
-
-    ds = ProjectDataset.get(ProjectDataset.name == "another one")
-    assert ds.data["this"] == "that"
-
-    projects.set_current("another one")
-    assert Database.get(Database.name == "foo").id
 
 
 @bw2test

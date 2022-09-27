@@ -13,6 +13,7 @@ def bw2test(wrapped, instance, args, kwargs):
     config.dont_warn = True
     config.is_test = True
     config.cache = {}
+    config.p = {}
     tempdir = projects._use_temp_directory()
     projects.set_current("".join(random.choices(string.ascii_lowercase, k=18)))
     atexit.register(shutil.rmtree, tempdir)
