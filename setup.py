@@ -6,7 +6,7 @@ root_dir = os.path.dirname(__file__)
 if root_dir:
     os.chdir(root_dir)
 
-for dirpath, dirnames, filenames in os.walk("bw2projects"):
+for dirpath, dirnames, filenames in os.walk("bw_projects"):
     # Ignore dirnames that start with '.'
     if "__init__.py" in filenames:
         pkg = dirpath.replace(os.path.sep, ".")
@@ -15,12 +15,12 @@ for dirpath, dirnames, filenames in os.walk("bw2projects"):
         packages.append(pkg)
 
 v_temp = {}
-with open("bw2projects/version.py") as fp:
+with open("bw_projects/version.py") as fp:
     exec(fp.read(), v_temp)
 version = ".".join((str(x) for x in v_temp["version"]))
 
 setup(
-    name="bw2projects",
+    name="bw_projects",
     version=version,
     packages=packages,
     python_requires=">=3.5",
@@ -34,7 +34,7 @@ setup(
         "peewee>=3.9.4",
         "wrapt",
     ],
-    url="https://github.com/baali/bw2projects.git",
+    url="https://github.com/baali/bw_projects.git",
     long_description=open("README.md").read(),
     description=("Tool to manage folders that houses sqlite data "),
     classifiers=[
