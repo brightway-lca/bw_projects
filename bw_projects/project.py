@@ -14,7 +14,7 @@ from peewee import BooleanField, DoesNotExist, Model, TextField
 
 from . import config
 from .filesystem import create_dir, maybe_path
-from .sqlite import PickleField, SubstitutableDatabase
+from .sqlite import JSONField, SubstitutableDatabase
 
 READ_ONLY_PROJECT = """
 ***Read only project***
@@ -33,7 +33,7 @@ def lockable():
 
 
 class ProjectDataset(Model):
-    data = PickleField()
+    data = JSONField()
     name = TextField(index=True, unique=True)
     full_hash = BooleanField(default=True)
 
