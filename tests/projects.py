@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from bw2projects import config, projects, ProjectDataset
-from bw2projects.tests import bw2test
+from bw_projects import config, projects, ProjectDataset
+from bw_projects.tests import bw2test
 
 ###
 ### Basic setup
