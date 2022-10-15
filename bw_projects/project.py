@@ -16,21 +16,6 @@ from . import config
 from .filesystem import create_dir, maybe_path
 from .sqlite import PickleField, SubstitutableDatabase
 
-READ_ONLY_PROJECT = """
-***Read only project***
-
-This project is being used by another process and no writes can be made until:
-    1. You close the other program, or switch to a different project, *and*
-    2. You call `projects.enable_writes` *and* get the response `True`.
-
-    If you are **sure** that this warning is incorrect, call
-    `projects.enable_writes(force=True)` to enable writes.
-"""
-
-
-def lockable():
-    return hasattr(config, "p") and config.p.get("lockable")
-
 
 class ProjectDataset(Model):
     data = PickleField()
@@ -160,7 +145,7 @@ class ProjectManager(Iterable):
         return bool(self.dataset.data.get("25"))
 
     def set_current(self, name, writable=True):
-        if not self.read_only and lockable() and hasattr(self, "_lock"):
+        if not self.read_only and hasattr(self, "_lock"):
             try:
                 self._lock.release()
             except (RuntimeError, ThreadError):
@@ -173,13 +158,9 @@ class ProjectManager(Iterable):
         self.create_project(name)
         self._reset_sqlite3_databases()
 
-        if not lockable():
-            pass
-        elif writable:
+        if writable:
             self._lock = InterProcessLock(self.dir / "write-lock")
             self.read_only = not self._lock.acquire(timeout=0.05)
-            if self.read_only:
-                warnings.warn(READ_ONLY_PROJECT)
         else:
             self.read_only = True
 
