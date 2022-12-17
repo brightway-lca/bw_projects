@@ -30,9 +30,7 @@ setup(
     install_requires=[
         "appdirs",
         "bw_processing",
-        "fasteners",
         "peewee>=3.9.4",
-        "wrapt",
     ],
     url="https://github.com/baali/bw_projects.git",
     long_description=open("README.md").read(),

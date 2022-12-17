@@ -7,9 +7,7 @@ from pathlib import Path
 from threading import ThreadError
 
 import appdirs
-import wrapt
 from bw_processing import safe_filename
-from fasteners import InterProcessLock
 from peewee import BooleanField, DoesNotExist, Model, TextField
 
 from . import config
@@ -20,7 +18,6 @@ from .sqlite import PickleField, SubstitutableDatabase
 class ProjectDataset(Model):
     data = PickleField()
     name = TextField(index=True, unique=True)
-    full_hash = BooleanField(default=True)
 
     def __str__(self):
         return "Project: {}".format(self.name)
@@ -52,26 +49,6 @@ class ProjectManager(Iterable):
         )
 
         columns = {o.name for o in self.db._database.get_columns("projectdataset")}
-        if "full_hash" not in columns:
-            src_filepath = self._base_data_dir / "projects.db"
-            backup_filepath = self._base_data_dir / "projects.backup.db"
-            shutil.copy(src_filepath, backup_filepath)
-
-            MIGRATION_WARNING = """Adding a column to the projects database. A backup copy of this database '{}' was made at '{}'; if you have problems, file an issue, and restore the backup data to use the stable version of Brightway2."""
-
-            print(MIGRATION_WARNING.format(src_filepath, backup_filepath))
-
-            ADD_FULL_HASH_COLUMN = """ALTER TABLE projectdataset ADD COLUMN "full_hash" integer default 1"""
-            self.db.execute_sql(ADD_FULL_HASH_COLUMN)
-
-            # We don't do this, as the column added doesn't have a default
-            # value, meaning that one would get error from using the
-            # development branch alongside the stable branch.
-
-            # from playhouse.migrate import SqliteMigrator, migrate
-            # migrator = SqliteMigrator(self.db._database)
-            # full_hash = BooleanField(default=True)
-            # migrate(migrator.add_column("projectdataset", "full_hash", full_hash),)
         self.set_current("default")
 
     def __iter__(self):
@@ -140,33 +117,13 @@ class ProjectManager(Iterable):
     def current(self):
         return self._project_name
 
-    @property
-    def twofive(self):
-        return bool(self.dataset.data.get("25"))
-
-    def set_current(self, name, writable=True):
-        if not self.read_only and hasattr(self, "_lock"):
-            try:
-                self._lock.release()
-            except (RuntimeError, ThreadError):
-                pass
+    def set_current(self, name):
         self._project_name = str(name)
 
         # Need to allow writes when creating a new project
         # for new metadata stores
         self.read_only = False
         self.create_project(name)
-        self._reset_sqlite3_databases()
-
-        if writable:
-            self._lock = InterProcessLock(self.dir / "write-lock")
-            self.read_only = not self._lock.acquire(timeout=0.05)
-        else:
-            self.read_only = True
-
-    def _reset_sqlite3_databases(self):
-        for relative_path, substitutable_db in config.sqlite3_databases:
-            substitutable_db.change_path(self.dir / relative_path)
 
     ### Public API
     @property
@@ -185,13 +142,13 @@ class ProjectManager(Iterable):
     def output_dir(self) -> Path:
         """Get directory for output files.
 
-        Uses environment variable ``BRIGHTWAY2_OUTPUT_DIR``; ``preferences['output_dir']``; or directory ``output`` in current project.
+        Uses environment variable ``BRIGHTWAY_OUTPUT_DIR``; ``preferences['output_dir']``; or directory ``output`` in current project.
 
         Returns output directory path.
 
         """
         ep, pp = (
-            maybe_path(os.getenv("BRIGHTWAY2_OUTPUT_DIR")),
+            maybe_path(os.getenv("BRIGHTWAY_OUTPUT_DIR")),
             hasattr(config, "p") and maybe_path(config.p.get("output_dir")),
         )
         if ep and ep.is_dir():
@@ -204,13 +161,11 @@ class ProjectManager(Iterable):
     def create_project(self, name=None, **kwargs):
         name = name or self.current
 
-        kwargs["25"] = True
-        full_hash = kwargs.pop("full_hash", False)
         try:
             self.dataset = ProjectDataset.get(ProjectDataset.name == name)
         except DoesNotExist:
             self.dataset = ProjectDataset.create(
-                data=kwargs, name=name, full_hash=full_hash
+                data=kwargs, name=name
             )
         create_dir(self.dir)
         for dir_name in self._basic_directories:
@@ -359,9 +314,3 @@ class ProjectManager(Iterable):
 
 
 projects = ProjectManager()
-
-
-@wrapt.decorator
-def writable_project(wrapped, instance, args, kwargs):
-    warnings.warn("`writable_project` is obsolete and does nothing", DeprecationWarning)
-    return wrapped(*args, **kwargs)
