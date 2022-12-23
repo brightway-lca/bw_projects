@@ -7,11 +7,10 @@ from pathlib import Path
 from threading import ThreadError
 
 import appdirs
-from bw_processing import safe_filename
 from peewee import BooleanField, DoesNotExist, Model, TextField
 
 from . import config
-from .filesystem import create_dir, maybe_path
+from .filesystem import create_dir, maybe_path, safe_filename
 from .sqlite import PickleField, SubstitutableDatabase
 
 
