@@ -1,5 +1,3 @@
 appdirs
 bw_processing
-fasteners
 peewee>=3.9.4
-wrapt
