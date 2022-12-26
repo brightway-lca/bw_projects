@@ -47,8 +47,6 @@ class ProjectManager(Iterable):
         self.db = SubstitutableDatabase(
             self._base_data_dir / "projects.db", [ProjectDataset]
         )
-
-        columns = {o.name for o in self.db._database.get_columns("projectdataset")}
         self.set_current("default")
 
     def __iter__(self):
