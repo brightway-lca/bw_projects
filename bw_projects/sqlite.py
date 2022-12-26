@@ -1,14 +1,23 @@
-import pickle
+import json
 
-from peewee import BlobField, SqliteDatabase
+from peewee import TextField, SqliteDatabase
 
 
-class PickleField(BlobField):
+class JSONField(TextField):
+    """Simpler JSON field that doesn't support advanced querying and is human-readable"""
+
     def db_value(self, value):
-        return super(PickleField, self).db_value(pickle.dumps(value, protocol=4))
+        return super().db_value(
+            json.dumps(
+                value,
+                ensure_ascii=False,
+                indent=2,
+                default=lambda x: x.isoformat() if hasattr(x, "isoformat") else x,
+            )
+        )
 
     def python_value(self, value):
-        return pickle.loads(bytes(value))
+        return json.loads(value)
 
 
 class SubstitutableDatabase:
