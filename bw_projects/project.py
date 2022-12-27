@@ -8,10 +8,11 @@ from threading import ThreadError
 
 import appdirs
 from peewee import BooleanField, DoesNotExist, Model, TextField
+from playhouse.sqlite_ext import JSONField
 
 from . import config
 from .filesystem import create_dir, maybe_path, safe_filename
-from .sqlite import JSONField, SubstitutableDatabase
+from .sqlite import SubstitutableDatabase
 
 
 class ProjectDataset(Model):

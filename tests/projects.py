@@ -259,11 +259,12 @@ def test_project_attributes_copy_empty(tmpdir):
 
 def test_project_attributes_copy_with_values(tmpdir):
     project = ProjectManager(tmpdir)
-    project.create_project("test-pr", test=True, tmp=True)
+    project.create_project("test-pr", test=False, tmp=True, projects=[])
     project.set_current("test-pr")
     project.copy_project("test-pr-copy")
     dataset = ProjectDataset.get(ProjectDataset.name == "test-pr-copy")
     assert dataset
     assert dataset.attributes
-    assert dataset.attributes["test"]
+    assert dataset.attributes["test"] is False
+    assert len(dataset.attributes["projects"]) == 0
     assert dataset.attributes["tmp"]
