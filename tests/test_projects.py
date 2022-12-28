@@ -75,7 +75,6 @@ class TestProjects(unittest.TestCase):
     def test_project_folder(self):
         with tempfile.TemporaryDirectory() as tmpdirname:
             projects = ProjectManager(tmpdirname)
-            print(projects.current)
             self.assertEqual(projects.current, None)
             self.assertEqual(len(projects), 0)
             with self.assertRaises(NoActiveProject):
@@ -120,14 +119,10 @@ class TestProjects(unittest.TestCase):
         project_2 = ProjectManager(folder_2)
         self.assertEqual(project_2.current, None)
 
-        self.assertNotEqual(
-            project_1._base_data_dir.as_posix(), project_2._base_data_dir.as_posix()
-        )
+        self.assertNotEqual(project_1._base_data_dir, project_2._base_data_dir)
 
         # Cleanup
-        self.assertIn(folder_1, project_1._base_data_dir.as_posix())
         shutil.rmtree(project_1._base_data_dir)
-        self.assertIn(folder_2, project_2._base_data_dir.as_posix())
         shutil.rmtree(project_2._base_data_dir)
 
 

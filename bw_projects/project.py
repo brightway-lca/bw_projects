@@ -233,12 +233,12 @@ class ProjectManager(Iterable):
         If deleting the current project, this function sets the current directory to ``default`` if it exists, or to a random project.
 
         Returns the current project."""
+        if self._project_name is None:
+            raise NoActiveProject
+
         victim = name or self.current
         if victim not in self:
             raise ValueError("{} is not a project".format(victim))
-
-        if len(self) == 1:
-            raise ValueError("Can't delete only remaining project")
 
         ProjectDataset.delete().where(ProjectDataset.name == victim).execute()
 
@@ -248,10 +248,10 @@ class ProjectManager(Iterable):
             shutil.rmtree(dir_path)
 
         if name is None or name == self.current:
-            if "default" in self:
-                self.set_current("default")
-            else:
+            try:
                 self.set_current(next(iter(self)).name)
+            except StopIteration:
+                self._project_name = None
         return self.current
 
     def purge_deleted_directories(self):

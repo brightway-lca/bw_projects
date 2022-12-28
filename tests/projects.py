@@ -108,6 +108,12 @@ def test_request_directory(tmpdir):
 ###
 
 
+def test_delete_default_raises_exception(tmpdir):
+    project = ProjectManager(tmpdir)
+    with pytest.raises(NoActiveProject):
+        project.delete_project()
+
+
 def test_delete_current_project_with_name(tmpdir):
     project = ProjectManager(tmpdir)
     project.set_current("foo")
@@ -138,7 +144,7 @@ def test_delete_project_keep_directory(tmpdir):
     assert project.current == "bar"
 
 
-def test_delete_project(tmpdir):
+def test_delete_project_with_name(tmpdir):
     project = ProjectManager(tmpdir)
     project.set_current("foo")
     project.set_current("bar")
@@ -149,12 +155,11 @@ def test_delete_project(tmpdir):
 
 def test_delete_last_project(tmpdir):
     project = ProjectManager(tmpdir)
-    assert len(project) == 1
+    assert len(project) == 0
     project.set_current("foo")
-    assert len(project) == 2
-    with pytest.raises(ValueError):
-        project.delete_project()
-        project.delete_project()
+    assert len(project) == 1
+    project.delete_project()
+    assert project.current is None
 
 
 def test_delete_current_project_no_name(tmpdir):
