@@ -6,7 +6,7 @@ root_dir = os.path.dirname(__file__)
 if root_dir:
     os.chdir(root_dir)
 
-for dirpath, dirnames, filenames in os.walk("bw_projects"):
+for dirpath, dirnames, filenames in os.walk("brightway_projects"):
     # Ignore dirnames that start with '.'
     if "__init__.py" in filenames:
         pkg = dirpath.replace(os.path.sep, ".")
@@ -15,12 +15,12 @@ for dirpath, dirnames, filenames in os.walk("bw_projects"):
         packages.append(pkg)
 
 v_temp = {}
-with open("bw_projects/version.py") as fp:
+with open("brightway_projects/version.py") as fp:
     exec(fp.read(), v_temp)
 version = ".".join((str(x) for x in v_temp["version"]))
 
 setup(
-    name="bw_projects",
+    name="brightway_projects",
     version=version,
     packages=packages,
     python_requires=">=3.5",
