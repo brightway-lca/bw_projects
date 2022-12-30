@@ -4,10 +4,9 @@ from pathlib import Path
 
 import pytest
 
-from bw_projects import config, ProjectDataset
-from bw_projects.errors import NoActiveProject
-from bw_projects.project import ProjectManager
-
+from brightway_projects import config, projects, ProjectDataset
+from brightway_projects.errors import NoActiveProject
+from brightway_projects.project import ProjectManager
 
 ###
 ### Basic setup

@@ -8,10 +8,15 @@ import unittest
 
 from pathlib import Path
 
-from bw_projects import projects
-from bw_projects.errors import NoActiveProject
-from bw_projects.filesystem import maybe_path, create_dir, check_dir, safe_filename
-from bw_projects.project import ProjectManager, ProjectDataset
+from brightway_projects import projects
+from brightway_projects.errors import NoActiveProject
+from brightway_projects.filesystem import (
+    maybe_path,
+    create_dir,
+    check_dir,
+    safe_filename,
+)
+from brightway_projects.project import ProjectManager, ProjectDataset
 
 
 class TestProjects(unittest.TestCase):
