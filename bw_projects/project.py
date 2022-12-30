@@ -8,15 +8,16 @@ from threading import ThreadError
 
 import appdirs
 from peewee import BooleanField, DoesNotExist, Model, TextField
+from playhouse.sqlite_ext import JSONField
 
 from . import config
 from .filesystem import create_dir, maybe_path, safe_filename
-from .sqlite import PickleField, SubstitutableDatabase
+from .sqlite import SubstitutableDatabase
 
 
 class ProjectDataset(Model):
-    data = PickleField()
     name = TextField(index=True, unique=True)
+    attributes = JSONField()
 
     def __str__(self):
         return "Project: {}".format(self.name)
@@ -156,7 +157,7 @@ class ProjectManager(Iterable):
         try:
             self.dataset = ProjectDataset.get(ProjectDataset.name == name)
         except DoesNotExist:
-            self.dataset = ProjectDataset.create(data=kwargs, name=name)
+            self.dataset = ProjectDataset.create(attributes=kwargs, name=name)
         create_dir(self.dir)
         for dir_name in self._basic_directories:
             create_dir(self.dir / dir_name)
@@ -169,8 +170,10 @@ class ProjectManager(Iterable):
         fp = self._base_data_dir / safe_filename(new_name)
         if fp.exists():
             raise ValueError("Project directory already exists")
-        project_data = ProjectDataset.get(ProjectDataset.name == self.current).data
-        ProjectDataset.create(data=project_data, name=new_name)
+        project_data = ProjectDataset.get(
+            ProjectDataset.name == self.current
+        ).attributes
+        ProjectDataset.create(attributes=project_data, name=new_name)
         shutil.copytree(self.dir, fp, ignore=lambda x, y: ["write-lock"])
         create_dir(self._base_logs_dir / safe_filename(new_name))
         if switch:

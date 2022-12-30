@@ -1,14 +1,4 @@
-import pickle
-
-from peewee import BlobField, SqliteDatabase
-
-
-class PickleField(BlobField):
-    def db_value(self, value):
-        return super(PickleField, self).db_value(pickle.dumps(value, protocol=4))
-
-    def python_value(self, value):
-        return pickle.loads(bytes(value))
+from peewee import SqliteDatabase
 
 
 class SubstitutableDatabase:

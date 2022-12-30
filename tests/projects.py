@@ -229,3 +229,42 @@ def test_copy_project_no_switch(tmpdir):
 
 
 # TODO: purge delete directories
+
+
+###
+### Project attributes
+###
+def test_project_attributes(tmpdir):
+    project = ProjectManager(tmpdir)
+    project.create_project("test-pr", test=True, tmp=True)
+    dataset = ProjectDataset.get(ProjectDataset.name == "test-pr")
+    assert dataset
+    assert dataset.attributes
+    assert dataset.attributes["test"]
+    assert dataset.attributes["tmp"]
+
+
+def test_project_attributes_default(tmpdir):
+    project = ProjectManager(tmpdir)
+    dataset = ProjectDataset.get(ProjectDataset.name == "default")
+    assert dataset.attributes == {}
+
+
+def test_project_attributes_copy_empty(tmpdir):
+    project = ProjectManager(tmpdir)
+    project.copy_project("default-copy", switch=False)
+    dataset = ProjectDataset.get(ProjectDataset.name == "default-copy")
+    assert dataset.attributes == {}
+
+
+def test_project_attributes_copy_with_values(tmpdir):
+    project = ProjectManager(tmpdir)
+    project.create_project("test-pr", test=False, tmp=True, projects=[])
+    project.set_current("test-pr")
+    project.copy_project("test-pr-copy")
+    dataset = ProjectDataset.get(ProjectDataset.name == "test-pr-copy")
+    assert dataset
+    assert dataset.attributes
+    assert dataset.attributes["test"] is False
+    assert len(dataset.attributes["projects"]) == 0
+    assert dataset.attributes["tmp"]
