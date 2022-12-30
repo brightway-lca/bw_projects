@@ -1,3 +1,2 @@
 appdirs
-bw_processing
 peewee>=3.9.4

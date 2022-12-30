@@ -7,11 +7,10 @@ from pathlib import Path
 from threading import ThreadError
 
 import appdirs
-from bw_processing import safe_filename
 from peewee import BooleanField, DoesNotExist, Model, TextField
 
 from . import config
-from .filesystem import create_dir, maybe_path
+from .filesystem import create_dir, maybe_path, safe_filename
 from .sqlite import PickleField, SubstitutableDatabase
 
 
@@ -41,8 +40,8 @@ class ProjectManager(Iterable):
     _is_temp_dir = False
     read_only = False
 
-    def __init__(self):
-        self._base_data_dir, self._base_logs_dir = self._get_base_directories()
+    def __init__(self, folder=None):
+        self._base_data_dir, self._base_logs_dir = self._get_base_directories(folder)
         self._create_base_directories()
         self.db = SubstitutableDatabase(
             self._base_data_dir / "projects.db", [ProjectDataset]
@@ -83,31 +82,28 @@ class ProjectManager(Iterable):
             )
 
     ### Internal functions for managing projects
-
-    def _get_base_directories(self):
-        envvar = maybe_path(os.getenv("BRIGHTWAY2_DIR"))
-        if envvar:
+    def _get_base_directories(self, folder=None):
+        if folder:
+            envvar = maybe_path(folder)
             if not envvar.is_dir():
-                raise OSError(
-                    (
-                        "BRIGHTWAY2_DIR variable is {}, but this is not"
-                        " a valid directory"
-                    ).format(envvar)
-                )
-            else:
-                print(
-                    "Using environment variable BRIGHTWAY2_DIR for data "
-                    "directory:\n{}".format(envvar)
-                )
-                envvar = envvar.absolute()
-                logs_dir = envvar / "logs"
-                create_dir(logs_dir)
-                return envvar, logs_dir
-
-        LABEL = "Brightway3"
-        data_dir = Path(appdirs.user_data_dir(LABEL, "pylca"))
-        logs_dir = Path(appdirs.user_log_dir(LABEL, "pylca"))
-        return data_dir, logs_dir
+                create_dir(envvar)
+            envvar = envvar.absolute()
+            logs_dir = envvar / "logs"
+            create_dir(logs_dir)
+            return envvar, logs_dir
+        elif os.getenv("BRIGHTWAY_DIR"):
+            envvar = maybe_path(os.getenv("BRIGHTWAY_DIR"))
+            if not envvar.is_dir():
+                create_dir(envvar)
+            envvar = envvar.absolute()
+            logs_dir = envvar / "logs"
+            create_dir(logs_dir)
+            return envvar, logs_dir
+        else:
+            LABEL = "Brightway3"
+            data_dir = Path(appdirs.user_data_dir(LABEL, "pylca"))
+            logs_dir = Path(appdirs.user_log_dir(LABEL, "pylca"))
+            return data_dir, logs_dir
 
     def _create_base_directories(self):
         create_dir(self._base_data_dir)
@@ -128,15 +124,11 @@ class ProjectManager(Iterable):
     ### Public API
     @property
     def dir(self) -> Path:
-        return Path(self._base_data_dir) / safe_filename(
-            self.current, full=self.dataset.full_hash
-        )
+        return Path(self._base_data_dir) / safe_filename(self.current)
 
     @property
     def logs_dir(self) -> Path:
-        return Path(self._base_logs_dir) / safe_filename(
-            self.current, full=self.dataset.full_hash
-        )
+        return Path(self._base_logs_dir) / safe_filename(self.current)
 
     @property
     def output_dir(self) -> Path:
@@ -164,9 +156,7 @@ class ProjectManager(Iterable):
         try:
             self.dataset = ProjectDataset.get(ProjectDataset.name == name)
         except DoesNotExist:
-            self.dataset = ProjectDataset.create(
-                data=kwargs, name=name
-            )
+            self.dataset = ProjectDataset.create(data=kwargs, name=name)
         create_dir(self.dir)
         for dir_name in self._basic_directories:
             create_dir(self.dir / dir_name)
@@ -176,13 +166,11 @@ class ProjectManager(Iterable):
         """Copy current project to a new project named ``new_name``. If ``switch``, switch to new project."""
         if new_name in self:
             raise ValueError("Project {} already exists".format(new_name))
-        fp = self._base_data_dir / safe_filename(new_name, full=self.dataset.full_hash)
+        fp = self._base_data_dir / safe_filename(new_name)
         if fp.exists():
             raise ValueError("Project directory already exists")
         project_data = ProjectDataset.get(ProjectDataset.name == self.current).data
-        ProjectDataset.create(
-            data=project_data, name=new_name, full_hash=self.dataset.full_hash
-        )
+        ProjectDataset.create(data=project_data, name=new_name)
         shutil.copytree(self.dir, fp, ignore=lambda x, y: ["write-lock"])
         create_dir(self._base_logs_dir / safe_filename(new_name))
         if switch:
@@ -275,11 +263,8 @@ class ProjectManager(Iterable):
         return len(bad_directories)
 
     def use_short_hash(self):
-        if not self.dataset.full_hash:
-            return
         try:
             old_dir, old_logs_dir = self.dir, self.logs_dir
-            self.dataset.full_hash = False
             if self.dir.exists():
                 raise OSError("Target directory {} already exists".format(self.dir))
             if self.logs_dir.exists():
@@ -290,15 +275,11 @@ class ProjectManager(Iterable):
             old_logs_dir.rename(self.logs_dir)
             self.dataset.save()
         except Exception as ex:
-            self.dataset.full_hash = True
             raise ex
 
     def use_full_hash(self):
-        if self.dataset.full_hash:
-            return
         try:
             old_dir, old_logs_dir = self.dir, self.logs_dir
-            self.dataset.full_hash = True
             if self.dir.exists():
                 raise OSError("Target directory {} already exists".format(self.dir))
             if self.logs_dir.exists():
@@ -309,7 +290,6 @@ class ProjectManager(Iterable):
             old_logs_dir.rename(self.logs_dir)
             self.dataset.save()
         except Exception as ex:
-            self.dataset.full_hash = False
             raise ex
 
 

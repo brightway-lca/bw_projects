@@ -29,7 +29,6 @@ setup(
     license="3-clause BSD",
     install_requires=[
         "appdirs",
-        "bw_processing",
         "peewee>=3.9.4",
     ],
     url="https://github.com/baali/bw_projects.git",
