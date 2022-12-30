@@ -4,8 +4,9 @@ from pathlib import Path
 
 import pytest
 
-from bw_projects.project import ProjectManager
 from bw_projects import config, ProjectDataset
+from bw_projects.errors import NoActiveProject
+from bw_projects.project import ProjectManager
 
 
 ###
@@ -32,8 +33,17 @@ def test_from_env_var():
     del os.environ["BRIGHTWAY_DIR"]
 
 
+def test_default_directories_raise_exception(tmpdir):
+    project = ProjectManager(tmpdir)
+    with pytest.raises(NoActiveProject):
+        project.dir
+    with pytest.raises(NoActiveProject):
+        project.logs_dir
+
+
 def test_directories(tmpdir):
     project = ProjectManager(tmpdir)
+    project.set_current("foo")
     assert os.path.isdir(project.dir)
     assert os.path.isdir(project.logs_dir)
 
@@ -43,7 +53,7 @@ def test_repeatedly_set_name_same_value(tmpdir):
     project.set_current("foo")
     project.set_current("foo")
     project.set_current("foo")
-    assert len(project) == 2
+    assert len(project) == 1
     assert "foo" in project
 
 
@@ -80,8 +90,15 @@ def test_funny_project_names(tmpdir):
         raise ValueError("Oops")
 
 
+def test_default_request_directory_raises_exception(tmpdir):
+    project = ProjectManager(tmpdir)
+    with pytest.raises(NoActiveProject):
+        project.request_directory("foo")
+
+
 def test_request_directory(tmpdir):
     project = ProjectManager(tmpdir)
+    project.set_current("New Project")
     project.request_directory("foo")
     assert "foo" in os.listdir(project.dir)
 
@@ -89,6 +106,12 @@ def test_request_directory(tmpdir):
 ###
 ### Project deletion
 ###
+
+
+def test_delete_default_raises_exception(tmpdir):
+    project = ProjectManager(tmpdir)
+    with pytest.raises(NoActiveProject):
+        project.delete_project()
 
 
 def test_delete_current_project_with_name(tmpdir):
@@ -121,7 +144,7 @@ def test_delete_project_keep_directory(tmpdir):
     assert project.current == "bar"
 
 
-def test_delete_project(tmpdir):
+def test_delete_project_with_name(tmpdir):
     project = ProjectManager(tmpdir)
     project.set_current("foo")
     project.set_current("bar")
@@ -132,12 +155,11 @@ def test_delete_project(tmpdir):
 
 def test_delete_last_project(tmpdir):
     project = ProjectManager(tmpdir)
-    assert len(project) == 1
+    assert len(project) == 0
     project.set_current("foo")
-    assert len(project) == 2
-    with pytest.raises(ValueError):
-        project.delete_project()
-        project.delete_project()
+    assert len(project) == 1
+    project.delete_project()
+    assert project.current is None
 
 
 def test_delete_current_project_no_name(tmpdir):
@@ -155,7 +177,7 @@ def test_delete_current_project_no_name(tmpdir):
 
 def test_error_outdated_set_project(tmpdir):
     project = ProjectManager(tmpdir)
-    assert project.current
+    assert project.current is None
     with pytest.raises(AttributeError):
         project.current = "Foo"
 
@@ -184,18 +206,23 @@ def test_representation(tmpdir):
     assert str(project)
 
 
+def test_default_is_None(tmpdir):
+    project = ProjectManager(tmpdir)
+    assert project.current is None
+
+
 def test_contains(tmpdir):
     project = ProjectManager(tmpdir)
-    assert "default" in project
+    assert project.current is None
     project.set_current("foo")
     assert "foo" in project
 
 
 def test_len(tmpdir):
     project = ProjectManager(tmpdir)
-    assert len(project) == 1
+    assert len(project) == 0
     project.set_current("foo")
-    assert len(project) == 2
+    assert len(project) == 1
 
 
 def test_iterating_over_projects_no_error(tmpdir):
@@ -213,18 +240,25 @@ def test_iterating_over_projects_no_error(tmpdir):
 ###
 
 
+def test_copy_without_project_raises_exception(tmpdir):
+    project = ProjectManager(tmpdir)
+    with pytest.raises(NoActiveProject):
+        project.copy_project("another one")
+
+
 def test_copy_project_switch_current(tmpdir):
     project = ProjectManager(tmpdir)
-    assert project.current == "default"
+    project.set_current("foo")
+    assert project.current == "foo"
     project.copy_project("another one")
     assert project.current == "another one"
 
 
 def test_copy_project_no_switch(tmpdir):
     project = ProjectManager(tmpdir)
-    assert project.current == "default"
+    project.set_current("foo")
     project.copy_project("another one", switch=False)
-    assert project.current == "default"
+    assert project.current == "foo"
     assert "another one" in project
 
 

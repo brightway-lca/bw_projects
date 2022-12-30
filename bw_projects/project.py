@@ -11,6 +11,7 @@ from peewee import BooleanField, DoesNotExist, Model, TextField
 from playhouse.sqlite_ext import JSONField
 
 from . import config
+from .errors import NoActiveProject
 from .filesystem import create_dir, maybe_path, safe_filename
 from .sqlite import SubstitutableDatabase
 
@@ -47,9 +48,7 @@ class ProjectManager(Iterable):
         self.db = SubstitutableDatabase(
             self._base_data_dir / "projects.db", [ProjectDataset]
         )
-
-        columns = {o.name for o in self.db._database.get_columns("projectdataset")}
-        self.set_current("default")
+        self._project_name = None
 
     def __iter__(self):
         for project_ds in ProjectDataset.select():
@@ -125,11 +124,17 @@ class ProjectManager(Iterable):
     ### Public API
     @property
     def dir(self) -> Path:
-        return Path(self._base_data_dir) / safe_filename(self.current)
+        if self.current:
+            return Path(self._base_data_dir) / safe_filename(self.current)
+        else:
+            raise NoActiveProject
 
     @property
     def logs_dir(self) -> Path:
-        return Path(self._base_logs_dir) / safe_filename(self.current)
+        if self.current:
+            return Path(self._base_logs_dir) / safe_filename(self.current)
+        else:
+            raise NoActiveProject
 
     @property
     def output_dir(self) -> Path:
@@ -170,6 +175,8 @@ class ProjectManager(Iterable):
         fp = self._base_data_dir / safe_filename(new_name)
         if fp.exists():
             raise ValueError("Project directory already exists")
+        if self.current is None:
+            raise NoActiveProject
         project_data = ProjectDataset.get(
             ProjectDataset.name == self.current
         ).attributes
@@ -200,7 +207,6 @@ class ProjectManager(Iterable):
         self._base_data_dir = temp_dir / "data"
         self._base_logs_dir = temp_dir / "logs"
         self.db.change_path(":memory:")
-        self.set_current("default")
         self._is_temp_dir = True
         return temp_dir
 
@@ -215,7 +221,6 @@ class ProjectManager(Iterable):
         self._base_logs_dir = self._orig_base_logs_dir
         del self._orig_base_logs_dir
         self.db.change_path(self._base_data_dir / "projects.db")
-        self.set_current("default")
         self._is_temp_dir = False
 
     def delete_project(self, name=None, delete_dir=False):
@@ -228,12 +233,12 @@ class ProjectManager(Iterable):
         If deleting the current project, this function sets the current directory to ``default`` if it exists, or to a random project.
 
         Returns the current project."""
+        if self._project_name is None:
+            raise NoActiveProject
+
         victim = name or self.current
         if victim not in self:
             raise ValueError("{} is not a project".format(victim))
-
-        if len(self) == 1:
-            raise ValueError("Can't delete only remaining project")
 
         ProjectDataset.delete().where(ProjectDataset.name == victim).execute()
 
@@ -243,10 +248,10 @@ class ProjectManager(Iterable):
             shutil.rmtree(dir_path)
 
         if name is None or name == self.current:
-            if "default" in self:
-                self.set_current("default")
-            else:
+            try:
                 self.set_current(next(iter(self)).name)
+            except StopIteration:
+                self._project_name = None
         return self.current
 
     def purge_deleted_directories(self):

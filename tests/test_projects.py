@@ -8,16 +8,16 @@ import unittest
 
 from pathlib import Path
 
-from bw_projects.project import ProjectManager, ProjectDataset
-from bw_projects.filesystem import maybe_path, create_dir, check_dir, safe_filename
 from bw_projects import projects
+from bw_projects.errors import NoActiveProject
+from bw_projects.filesystem import maybe_path, create_dir, check_dir, safe_filename
+from bw_projects.project import ProjectManager, ProjectDataset
 
 
 class TestProjects(unittest.TestCase):
     def setUp(self):
         self.tempdir = projects._use_temp_directory()
         self.current = "".join(random.choices(string.ascii_lowercase, k=18))
-        self.assertEqual("default", projects.current)
         projects.set_current(self.current)
         self.assertEqual(self.current, projects.current)
         self.projects = projects
@@ -35,13 +35,12 @@ class TestProjects(unittest.TestCase):
         self.assertEqual(self.current, self.projects.current)
         self.assertTrue(check_dir(self.projects.dir.absolute()))
         self.assertTrue(check_dir(self.projects.logs_dir.absolute()))
-        self.assertEqual(len(self.projects), 2)
-        self.assertTrue("default" in self.projects)
+        self.assertEqual(len(self.projects), 1)
 
     def test_create_project(self):
-        self.assertEqual(len(self.projects), 2)
+        self.assertEqual(len(self.projects), 1)
         self.projects.create_project("a-new-project")
-        self.assertEqual(len(self.projects), 3)
+        self.assertEqual(len(self.projects), 2)
         self.assertNotEqual(projects.current, "a-new-project")
         self.assertTrue("a-new-project" in self.projects)
 
@@ -65,7 +64,7 @@ class TestProjects(unittest.TestCase):
         """No arguments, initializing project instance"""
         projects = ProjectManager()
         self.assertGreater(len(projects), 1)
-        self.assertEqual(projects.current, "default")
+        self.assertEqual(projects.current, None)
         shutil.rmtree(projects.dir)
 
     @unittest.skipUnless(sys.platform.startswith("win"), "requires Windows")
@@ -76,23 +75,23 @@ class TestProjects(unittest.TestCase):
     def test_project_folder(self):
         with tempfile.TemporaryDirectory() as tmpdirname:
             projects = ProjectManager(tmpdirname)
-            self.assertEqual(projects.current, "default")
-            self.assertEqual(len(projects), 1)
-            self.assertTrue(check_dir(projects.dir))
-            self.assertTrue(projects.dir.is_relative_to(tmpdirname))
+            self.assertEqual(projects.current, None)
+            self.assertEqual(len(projects), 0)
+            with self.assertRaises(NoActiveProject):
+                projects.dir
 
     def test_project_with_folder_priority(self):
         """Pass folder argument and confirm ENV variable doesn't get used"""
         os.environ["BRIGHTWAY_DIR"] = os.getcwd()
         with tempfile.TemporaryDirectory() as tmpdirname:
             projects = ProjectManager(tmpdirname)
-            self.assertEqual(projects.current, "default")
-            self.assertEqual(len(projects), 1)
-            self.assertTrue(check_dir(projects.dir))
-            self.assertTrue(projects.dir.is_relative_to(tmpdirname))
-            self.assertFalse(projects.dir.is_relative_to(os.getenv("BRIGHTWAY_DIR")))
+            self.assertEqual(projects.current, None)
+            self.assertEqual(len(projects), 0)
+            with self.assertRaises(NoActiveProject):
+                projects.dir
+            self.assertTrue(projects._base_data_dir.is_relative_to(tmpdirname))
             self.assertFalse(
-                check_dir(f"{os.getenv('BRIGHTWAY_DIR')}/{safe_filename('default')}")
+                projects._base_data_dir.is_relative_to(os.getenv("BRIGHTWAY_DIR"))
             )
             del os.environ["BRIGHTWAY_DIR"]
 
@@ -101,34 +100,29 @@ class TestProjects(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdirname:
             os.environ["BRIGHTWAY_DIR"] = tmpdirname
             projects = ProjectManager()
-            self.assertTrue(
-                check_dir(f"{os.getenv('BRIGHTWAY_DIR')}/{safe_filename('default')}")
-            )
-            self.assertEqual(projects.current, "default")
-            self.assertEqual(len(projects), 1)
-            self.assertTrue(check_dir(projects.dir))
-            self.assertTrue(projects.dir.is_relative_to(tmpdirname))
+            self.assertTrue(check_dir(f"{projects._base_data_dir}"))
+            self.assertTrue(check_dir(f"{projects._base_logs_dir}"))
+            self.assertEqual(projects.current, None)
+            self.assertEqual(len(projects), 0)
+            with self.assertRaises(NoActiveProject):
+                projects.dir
             del os.environ["BRIGHTWAY_DIR"]
 
     def test_multiple_projects_different_location(self):
         folder_1 = "".join(random.choices(string.ascii_lowercase, k=8))
         self.assertFalse(check_dir(folder_1))
         project_1 = ProjectManager(folder_1)
-        self.assertEqual(project_1.current, "default")
+        self.assertEqual(project_1.current, None)
 
         folder_2 = "".join(random.choices(string.ascii_lowercase, k=8))
         self.assertFalse(check_dir(folder_2))
         project_2 = ProjectManager(folder_2)
-        self.assertEqual(project_2.current, "default")
+        self.assertEqual(project_2.current, None)
 
-        self.assertNotEqual(
-            project_1._base_data_dir.as_posix(), project_2._base_data_dir.as_posix()
-        )
+        self.assertNotEqual(project_1._base_data_dir, project_2._base_data_dir)
 
         # Cleanup
-        self.assertIn(folder_1, project_1._base_data_dir.as_posix())
         shutil.rmtree(project_1._base_data_dir)
-        self.assertIn(folder_2, project_2._base_data_dir.as_posix())
         shutil.rmtree(project_2._base_data_dir)
 
 
