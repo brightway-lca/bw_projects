@@ -270,7 +270,7 @@ def test_copy_project_no_switch(tmpdir):
 ###
 def test_project_attributes(tmpdir):
     project = ProjectManager(tmpdir)
-    project.create_project("test-pr", test=True, tmp=True)
+    project.set_current("test-pr", test=True, tmp=True)
     dataset = ProjectDataset.get(ProjectDataset.name == "test-pr")
     assert dataset
     assert dataset.attributes
@@ -280,12 +280,14 @@ def test_project_attributes(tmpdir):
 
 def test_project_attributes_default(tmpdir):
     project = ProjectManager(tmpdir)
+    project.set_current("default")
     dataset = ProjectDataset.get(ProjectDataset.name == "default")
     assert dataset.attributes == {}
 
 
 def test_project_attributes_copy_empty(tmpdir):
     project = ProjectManager(tmpdir)
+    project.set_current("default")
     project.copy_project("default-copy", switch=False)
     dataset = ProjectDataset.get(ProjectDataset.name == "default-copy")
     assert dataset.attributes == {}
@@ -293,8 +295,7 @@ def test_project_attributes_copy_empty(tmpdir):
 
 def test_project_attributes_copy_with_values(tmpdir):
     project = ProjectManager(tmpdir)
-    project.create_project("test-pr", test=False, tmp=True, projects=[])
-    project.set_current("test-pr")
+    project.set_current("test-pr", test=False, tmp=True, projects=[])
     project.copy_project("test-pr-copy")
     dataset = ProjectDataset.get(ProjectDataset.name == "test-pr-copy")
     assert dataset

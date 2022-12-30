@@ -113,13 +113,13 @@ class ProjectManager(Iterable):
     def current(self):
         return self._project_name
 
-    def set_current(self, name):
+    def set_current(self, name, **kwargs):
         self._project_name = str(name)
 
         # Need to allow writes when creating a new project
         # for new metadata stores
         self.read_only = False
-        self.create_project(name)
+        self.create_project(name, **kwargs)
 
     ### Public API
     @property
