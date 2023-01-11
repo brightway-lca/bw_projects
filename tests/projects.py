@@ -1,16 +1,15 @@
 import os
 import tempfile
-from pathlib import Path
 
 import pytest
 
-from brightway_projects import config, projects, ProjectDataset
+from brightway_projects import config, ProjectDataset
 from brightway_projects.errors import NoActiveProject
 from brightway_projects.project import ProjectManager
 
-###
-### Basic setup
-###
+# -----------
+# Basic setup
+# -----------
 
 
 def test_project_directories(tmpdir):
@@ -61,7 +60,8 @@ def test_funny_project_names(tmpdir):
     project = ProjectManager(tmpdir)
     NAMES = [
         "Powerلُلُصّبُلُلصّبُررً ॣ ॣh ॣ ॣ冗",
-        "Roses are [0;31mred[0m, violets are [0;34mblue. Hope you enjoy terminal hue",
+        "Roses are [0;31mred[0m, violets are [0;34mblue. Hope " +
+        "you enjoy terminal hue",
         "True",
         "None",
         "1.0/0.0",
@@ -82,7 +82,7 @@ def test_funny_project_names(tmpdir):
             project.set_current(name)
             assert [x for x in os.listdir(project.dir)]
             print("This is OK:", name)
-        except:
+        except Exception:
             print("This is not OK:", name)
             error_found = True
     if error_found:
@@ -102,9 +102,9 @@ def test_request_directory(tmpdir):
     assert "foo" in os.listdir(project.dir)
 
 
-###
-### Project deletion
-###
+# ----------------
+# Project deletion
+# ----------------
 
 
 def test_delete_default_raises_exception(tmpdir):
@@ -169,9 +169,9 @@ def test_delete_current_project_no_name(tmpdir):
     assert project.current != "foo"
 
 
-###
-### Set project
-###
+# -----------
+# Set project
+# -----------
 
 
 def test_error_outdated_set_project(tmpdir):
@@ -194,9 +194,9 @@ def test_set_project(tmpdir):
     assert project.current == "foo"
 
 
-###
-### Test magic methods
-###
+# ------------------
+# Test magic methods
+# ------------------
 
 
 def test_representation(tmpdir):
@@ -234,9 +234,9 @@ def test_iterating_over_projects_no_error(tmpdir):
         assert x.name == project.current
 
 
-###
-### Copy project
-###
+# ------------
+# Copy project
+# ------------
 
 
 def test_copy_without_project_raises_exception(tmpdir):
@@ -264,9 +264,9 @@ def test_copy_project_no_switch(tmpdir):
 # TODO: purge delete directories
 
 
-###
-### Project attributes
-###
+# ------------------
+# Project attributes
+# ------------------
 def test_project_attributes(tmpdir):
     project = ProjectManager(tmpdir)
     project.set_current("test-pr", test=True, tmp=True)

@@ -5,7 +5,8 @@ from brightway_projects.project import projects, ProjectDataset
 
 __all__ = (
     "__version__",
-    # Add functions and variables you want exposed in `brightway_projects.` namespace here
+    # Add functions and variables you want exposed in `brightway_projects.`
+    # namespace here
     "config",
     "projects",
     "ProjectDataset",
