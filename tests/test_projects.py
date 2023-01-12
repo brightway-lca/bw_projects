@@ -122,6 +122,10 @@ class TestProjects(unittest.TestCase):
 
         self.assertNotEqual(project_1._base_data_dir, project_2._base_data_dir)
 
+        # FIXME: db connection should be automatically closed
+        project_1.db.db.close()
+        project_2.db.db.close()
+
         # Cleanup
         shutil.rmtree(project_1._base_data_dir)
         shutil.rmtree(project_2._base_data_dir)
