@@ -74,40 +74,40 @@ class TestProjects(unittest.TestCase):
         pass
 
     def test_project_folder(self):
-        with tempfile.TemporaryDirectory() as tmpdirname:
-            projects = ProjectManager(tmpdirname)
-            self.assertEqual(projects.current, None)
-            self.assertEqual(len(projects), 0)
-            with self.assertRaises(NoActiveProject):
-                projects.dir
+        tmpdirname = tempfile.gettempdir()
+        projects = ProjectManager(tmpdirname)
+        self.assertEqual(projects.current, None)
+        self.assertEqual(len(projects), 0)
+        with self.assertRaises(NoActiveProject):
+            projects.dir
 
     def test_project_with_folder_priority(self):
         """Pass folder argument and confirm ENV variable doesn't get used"""
         os.environ["BRIGHTWAY_DIR"] = os.getcwd()
-        with tempfile.TemporaryDirectory() as tmpdirname:
-            projects = ProjectManager(tmpdirname)
-            self.assertEqual(projects.current, None)
-            self.assertEqual(len(projects), 0)
-            with self.assertRaises(NoActiveProject):
-                projects.dir
-            self.assertTrue(projects._base_data_dir.is_relative_to(tmpdirname))
-            self.assertFalse(
-                projects._base_data_dir.is_relative_to(os.getenv("BRIGHTWAY_DIR"))
-            )
-            del os.environ["BRIGHTWAY_DIR"]
+        tmpdirname = tempfile.gettempdir()
+        projects = ProjectManager(tmpdirname)
+        self.assertEqual(projects.current, None)
+        self.assertEqual(len(projects), 0)
+        with self.assertRaises(NoActiveProject):
+            projects.dir
+        self.assertTrue(projects._base_data_dir.is_relative_to(tmpdirname))
+        self.assertFalse(
+            projects._base_data_dir.is_relative_to(os.getenv("BRIGHTWAY_DIR"))
+        )
+        del os.environ["BRIGHTWAY_DIR"]
 
     def test_project_with_env_variable(self):
         """Pass folder argument and confirm ENV variable doesn't get used"""
-        with tempfile.TemporaryDirectory() as tmpdirname:
-            os.environ["BRIGHTWAY_DIR"] = tmpdirname
-            projects = ProjectManager()
-            self.assertTrue(check_dir(f"{projects._base_data_dir}"))
-            self.assertTrue(check_dir(f"{projects._base_logs_dir}"))
-            self.assertEqual(projects.current, None)
-            self.assertEqual(len(projects), 0)
-            with self.assertRaises(NoActiveProject):
-                projects.dir
-            del os.environ["BRIGHTWAY_DIR"]
+        tmpdirname = tempfile.gettempdir()
+        os.environ["BRIGHTWAY_DIR"] = tmpdirname
+        projects = ProjectManager()
+        self.assertTrue(check_dir(f"{projects._base_data_dir}"))
+        self.assertTrue(check_dir(f"{projects._base_logs_dir}"))
+        self.assertEqual(projects.current, None)
+        self.assertEqual(len(projects), 0)
+        with self.assertRaises(NoActiveProject):
+            projects.dir
+        del os.environ["BRIGHTWAY_DIR"]
 
     def test_multiple_projects_different_location(self):
         folder_1 = "".join(random.choices(string.ascii_lowercase, k=8))
