@@ -42,7 +42,7 @@ class ProjectManager(Iterable):
     _is_temp_dir = False
     read_only = False
 
-    def __init__(self, folder=None):
+    def __init__(self, folder: str = None):
         self._base_data_dir, self._base_logs_dir = self._get_base_directories(folder)
         self._create_base_directories()
         self.db = SubstitutableDatabase(
@@ -54,13 +54,13 @@ class ProjectManager(Iterable):
         for project_ds in ProjectDataset.select():
             yield project_ds
 
-    def __contains__(self, name):
+    def __contains__(self, name: str) -> bool:
         return ProjectDataset.select().where(ProjectDataset.name == name).count() > 0
 
-    def __len__(self):
+    def __len__(self) -> int:
         return ProjectDataset.select().count()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         if len(self) > 20:
             return (
                 "Brightway2 projects manager with {} objects, including:"
@@ -82,7 +82,7 @@ class ProjectManager(Iterable):
             )
 
     ### Internal functions for managing projects
-    def _get_base_directories(self, folder=None):
+    def _get_base_directories(self, folder: str = None) -> tuple[Path, Path]:
         if folder:
             envvar = maybe_path(folder)
             if not envvar.is_dir():
@@ -105,15 +105,15 @@ class ProjectManager(Iterable):
             logs_dir = Path(appdirs.user_log_dir(LABEL, "pylca"))
             return data_dir, logs_dir
 
-    def _create_base_directories(self):
+    def _create_base_directories(self) -> None:
         create_dir(self._base_data_dir)
         create_dir(self._base_logs_dir)
 
     @property
-    def current(self):
+    def current(self) -> str:
         return self._project_name
 
-    def set_current(self, name, **kwargs):
+    def set_current(self, name, **kwargs) -> None:
         self._project_name = str(name)
 
         # Need to allow writes when creating a new project
@@ -156,7 +156,7 @@ class ProjectManager(Iterable):
         else:
             return self.request_directory("output")
 
-    def create_project(self, name=None, **kwargs):
+    def create_project(self, name: str = None, **kwargs) -> None:
         name = name or self.current
 
         try:
@@ -168,7 +168,7 @@ class ProjectManager(Iterable):
             create_dir(self.dir / dir_name)
         create_dir(self.logs_dir)
 
-    def copy_project(self, new_name, switch=True):
+    def copy_project(self, new_name: str, switch: bool = True) -> None:
         """Copy current project to a new project named ``new_name``. If ``switch``, switch to new project."""
         if new_name in self:
             raise ValueError("Project {} already exists".format(new_name))
@@ -186,7 +186,7 @@ class ProjectManager(Iterable):
         if switch:
             self.set_current(new_name)
 
-    def request_directory(self, name):
+    def request_directory(self, name: str) -> Path:
         """Return the absolute path to the subdirectory ``dirname``, creating it if necessary.
 
         Returns ``False`` if directory can't be created."""
@@ -196,7 +196,7 @@ class ProjectManager(Iterable):
             return False
         return fp
 
-    def _use_temp_directory(self):
+    def _use_temp_directory(self) -> None:
         """Point the ProjectManager towards a temporary directory instead of `user_data_dir`.
 
         Used exclusively for tests."""
@@ -210,7 +210,7 @@ class ProjectManager(Iterable):
         self._is_temp_dir = True
         return temp_dir
 
-    def _restore_orig_directory(self):
+    def _restore_orig_directory(self) -> None:
         """Point the ProjectManager back to original directories.
 
         Used exclusively in tests."""
@@ -223,7 +223,7 @@ class ProjectManager(Iterable):
         self.db.change_path(self._base_data_dir / "projects.db")
         self._is_temp_dir = False
 
-    def delete_project(self, name=None, delete_dir=False):
+    def delete_project(self, name: str = None, delete_dir: bool = False) -> str:
         """Delete project ``name``, or the current project.
 
         ``name`` is the project to delete. If ``name`` is not provided, delete the current project.
@@ -254,7 +254,7 @@ class ProjectManager(Iterable):
                 self._project_name = None
         return self.current
 
-    def purge_deleted_directories(self):
+    def purge_deleted_directories(self) -> int:
         """Delete project directories for projects which are no longer registered.
 
         Returns number of directories deleted."""
@@ -270,7 +270,7 @@ class ProjectManager(Iterable):
 
         return len(bad_directories)
 
-    def use_short_hash(self):
+    def use_short_hash(self) -> None:
         try:
             old_dir, old_logs_dir = self.dir, self.logs_dir
             if self.dir.exists():
@@ -285,7 +285,7 @@ class ProjectManager(Iterable):
         except Exception as ex:
             raise ex
 
-    def use_full_hash(self):
+    def use_full_hash(self) -> None:
         try:
             old_dir, old_logs_dir = self.dir, self.logs_dir
             if self.dir.exists():
