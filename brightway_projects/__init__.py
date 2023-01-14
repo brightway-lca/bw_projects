@@ -2,6 +2,7 @@
 from brightway_projects.utils import get_version_tuple
 from brightway_projects.configuration import config
 from brightway_projects.project import projects, ProjectDataset
+from brightway_projects.sqlite import SubstitutableDatabase
 
 __all__ = (
     "__version__",
@@ -9,6 +10,7 @@ __all__ = (
     "config",
     "projects",
     "ProjectDataset",
+    "SubstitutableDatabase",
 )
 
 __version__ = get_version_tuple()
