@@ -6,7 +6,8 @@ from brightway_projects.sqlite import SubstitutableDatabase
 
 __all__ = (
     "__version__",
-    # Add functions and variables you want exposed in `brightway_projects.` namespace here
+    # Add functions and variables you want exposed in `brightway_projects.`
+    # namespace here
     "config",
     "projects",
     "ProjectDataset",

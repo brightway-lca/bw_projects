@@ -13,7 +13,8 @@ MULTI_RE = re.compile(r"_{2,}")
 
 
 def safe_filename(string: Union[str, bytes], add_hash: bool = True) -> str:
-    """Convert arbitrary strings to make them safe for filenames. Substitutes strange characters, and uses unicode normalization.
+    """Convert arbitrary strings to make them safe for filenames. Substitutes strange
+    characters, and uses unicode normalization.
     if `add_hash`, appends hash of `string` to avoid name collisions.
     From http://stackoverflow.com/questions/295135/turn-a-string-into-a-valid-filename-in-python"""
     safe = re.sub(
@@ -35,7 +36,8 @@ def create_dir(dirpath: str) -> None:
 
 
 def check_dir(directory: str) -> bool:
-    """Returns ``True`` if given path is a directory and writeable, ``False`` otherwise."""
+    """Returns ``True`` if given path is a directory and writeable,
+    ``False`` otherwise."""
     return os.path.isdir(directory) and os.access(directory, os.W_OK)
 
 

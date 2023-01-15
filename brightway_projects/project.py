@@ -1,13 +1,11 @@
 import os
 import shutil
 import tempfile
-import warnings
 from collections.abc import Iterable
 from pathlib import Path
-from threading import ThreadError
 
 import appdirs
-from peewee import BooleanField, DoesNotExist, Model, TextField
+from peewee import DoesNotExist, Model, TextField
 from playhouse.sqlite_ext import JSONField
 
 from brightway_projects import config
@@ -22,8 +20,6 @@ class ProjectDataset(Model):
 
     def __str__(self):
         return "Project: {}".format(self.name)
-
-    __repr__ = lambda x: str(x)
 
     def __lt__(self, other):
         if not isinstance(other, ProjectDataset):
@@ -81,7 +77,7 @@ class ProjectManager(Iterable):
                 "".join(["\n\t{}".format(x) for x in sorted([x.name for x in self])]),
             )
 
-    ### Internal functions for managing projects
+    # ---- Internal functions for managing projects
     def _get_base_directories(self, folder: str = None) -> tuple[Path, Path]:
         if folder:
             envvar = maybe_path(folder)
@@ -121,7 +117,7 @@ class ProjectManager(Iterable):
         self.read_only = False
         self.create_project(name, **kwargs)
 
-    ### Public API
+    # Public API
     @property
     def dir(self) -> Path:
         if self.current:
@@ -140,7 +136,9 @@ class ProjectManager(Iterable):
     def output_dir(self) -> Path:
         """Get directory for output files.
 
-        Uses environment variable ``BRIGHTWAY_OUTPUT_DIR``; ``preferences['output_dir']``; or directory ``output`` in current project.
+        Uses environment variable ``BRIGHTWAY_OUTPUT_DIR``;
+        ``preferences['output_dir']``; or directory ``output``
+        in current project.
 
         Returns output directory path.
 
@@ -169,7 +167,8 @@ class ProjectManager(Iterable):
         create_dir(self.logs_dir)
 
     def copy_project(self, new_name: str, switch: bool = True) -> None:
-        """Copy current project to a new project named ``new_name``. If ``switch``, switch to new project."""
+        """Copy current project to a new project named ``new_name``. If ``switch``,
+        switch to new project."""
         if new_name in self:
             raise ValueError("Project {} already exists".format(new_name))
         fp = self._base_data_dir / safe_filename(new_name)
@@ -187,7 +186,8 @@ class ProjectManager(Iterable):
             self.set_current(new_name)
 
     def request_directory(self, name: str) -> Path:
-        """Return the absolute path to the subdirectory ``dirname``, creating it if necessary.
+        """Return the absolute path to the subdirectory ``dirname``,
+        creating it if necessary.
 
         Returns ``False`` if directory can't be created."""
         fp = self.dir / str(name)
@@ -197,7 +197,8 @@ class ProjectManager(Iterable):
         return fp
 
     def _use_temp_directory(self) -> None:
-        """Point the ProjectManager towards a temporary directory instead of `user_data_dir`.
+        """Point the ProjectManager towards a temporary directory instead of
+        `user_data_dir`.
 
         Used exclusively for tests."""
         if not self._is_temp_dir:
@@ -226,11 +227,15 @@ class ProjectManager(Iterable):
     def delete_project(self, name: str = None, delete_dir: bool = False) -> str:
         """Delete project ``name``, or the current project.
 
-        ``name`` is the project to delete. If ``name`` is not provided, delete the current project.
+        ``name`` is the project to delete. If ``name`` is not provided,
+        delete the current project.
 
-        By default, the underlying project directory is not deleted; only the project name is removed from the list of active projects. If ``delete_dir`` is ``True``, then also delete the project directory.
+        By default, the underlying project directory is not deleted;
+        only the project name is removed from the list of active projects.
+        If ``delete_dir`` is ``True``, then also delete the project directory.
 
-        If deleting the current project, this function sets the current directory to ``default`` if it exists, or to a random project.
+        If deleting the current project, this function sets the current directory
+        to ``default`` if it exists, or to a random project.
 
         Returns the current project."""
         if self._project_name is None:
