@@ -3,7 +3,7 @@
 import pytest
 from click.testing import CliRunner
 
-from brightway_projects import cli
+from bw_projects import cli
 
 
 @pytest.fixture

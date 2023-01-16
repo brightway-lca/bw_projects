@@ -3,9 +3,9 @@ import tempfile
 
 import pytest
 
-from brightway_projects import config, ProjectDataset
-from brightway_projects.errors import NoActiveProject
-from brightway_projects.project import ProjectManager
+from bw_projects import config, ProjectDataset
+from bw_projects.errors import NoActiveProject
+from bw_projects.project import ProjectManager
 
 # -----------
 # Basic setup
@@ -60,8 +60,8 @@ def test_funny_project_names(tmpdir):
     project = ProjectManager(tmpdir)
     NAMES = [
         "Powerلُلُصّبُلُلصّبُررً ॣ ॣh ॣ ॣ冗",
-        "Roses are [0;31mred[0m, violets are [0;34mblue. Hope " +
-        "you enjoy terminal hue",
+        "Roses are [0;31mred[0m, violets are [0;34mblue. Hope "
+        + "you enjoy terminal hue",
         "True",
         "None",
         "1.0/0.0",

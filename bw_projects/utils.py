@@ -11,7 +11,5 @@ def get_version_tuple() -> tuple:
 
     return tuple(
         as_integer(v)
-        for v in importlib.metadata.version("brightway_projects")
-        .strip()
-        .split(".")
+        for v in importlib.metadata.version("bw_projects").strip().split(".")
     )
