@@ -31,8 +31,7 @@ def safe_filename(string: Union[str, bytes], add_hash: bool = True) -> str:
 
 def create_dir(dirpath: str) -> None:
     "Create directory tree to `dirpath`; ignore if already exists"
-    if not os.path.isdir(dirpath):
-        os.makedirs(dirpath)
+    os.makedirs(dirpath, exist_ok=True)
 
 
 def check_dir(directory: str) -> bool:
