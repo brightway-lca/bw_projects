@@ -34,5 +34,4 @@ class SubstitutableDatabase:
         return self.db.transaction()
 
     def vacuum(self):
-        print("Vacuuming database ")
         self.execute_sql("VACUUM;")

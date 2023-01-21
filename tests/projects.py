@@ -81,9 +81,7 @@ def test_funny_project_names(tmpdir):
         try:
             project.set_current(name)
             assert [x for x in os.listdir(project.dir)]
-            print("This is OK:", name)
         except Exception:
-            print("This is not OK:", name)
             error_found = True
     if error_found:
         raise ValueError("Oops")
