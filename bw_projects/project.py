@@ -8,10 +8,10 @@ import appdirs
 from peewee import DoesNotExist, Model, TextField
 from playhouse.sqlite_ext import JSONField
 
-from brightway_projects import config
-from brightway_projects.errors import NoActiveProject
-from brightway_projects.filesystem import create_dir, maybe_path, safe_filename
-from brightway_projects.sqlite import SubstitutableDatabase
+from bw_projects import config
+from bw_projects.errors import NoActiveProject
+from bw_projects.filesystem import create_dir, maybe_path, safe_filename
+from bw_projects.sqlite import SubstitutableDatabase
 
 
 class ProjectDataset(Model):

@@ -1,3 +1,3 @@
-"""Fixtures for brightway_projects"""
+"""Fixtures for bw_projects"""
 
 # import pytest
