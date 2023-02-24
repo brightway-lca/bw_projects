@@ -275,35 +275,5 @@ class ProjectManager(Iterable):
 
         return len(bad_directories)
 
-    def use_short_hash(self) -> None:
-        try:
-            old_dir, old_logs_dir = self.dir, self.logs_dir
-            if self.dir.exists():
-                raise OSError("Target directory {} already exists".format(self.dir))
-            if self.logs_dir.exists():
-                raise OSError(
-                    "Target directory {} already exists".format(self.logs_dir)
-                )
-            old_dir.rename(self.dir)
-            old_logs_dir.rename(self.logs_dir)
-            self.dataset.save()
-        except Exception as ex:
-            raise ex
-
-    def use_full_hash(self) -> None:
-        try:
-            old_dir, old_logs_dir = self.dir, self.logs_dir
-            if self.dir.exists():
-                raise OSError("Target directory {} already exists".format(self.dir))
-            if self.logs_dir.exists():
-                raise OSError(
-                    "Target directory {} already exists".format(self.logs_dir)
-                )
-            old_dir.rename(self.dir)
-            old_logs_dir.rename(self.logs_dir)
-            self.dataset.save()
-        except Exception as ex:
-            raise ex
-
 
 projects = ProjectManager()
