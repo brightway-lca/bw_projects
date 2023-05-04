@@ -9,7 +9,7 @@ from peewee import DoesNotExist, Model, TextField
 from playhouse.sqlite_ext import JSONField
 
 from bw_projects.errors import NoActiveProject
-from bw_projects.filesystem import create_dir, maybe_path, safe_filename
+from bw_projects.filesystem import maybe_path, safe_filename
 from bw_projects.sqlite import SubstitutableDatabase
 
 
@@ -81,18 +81,18 @@ class ProjectManager(Iterable):
         if folder:
             envvar = maybe_path(folder)
             if not envvar.is_dir():
-                create_dir(envvar)
+                os.makedirs(envvar, exist_ok=True)
             envvar = envvar.absolute()
             logs_dir = envvar / "logs"
-            create_dir(logs_dir)
+            os.makedirs(logs_dir, exist_ok=True)
             return envvar, logs_dir
         elif os.getenv("BRIGHTWAY_DIR"):
             envvar = maybe_path(os.getenv("BRIGHTWAY_DIR"))
             if not envvar.is_dir():
-                create_dir(envvar)
+                os.makedirs(envvar, exist_ok=True)
             envvar = envvar.absolute()
             logs_dir = envvar / "logs"
-            create_dir(logs_dir)
+            os.makedirs(logs_dir, exist_ok=True)
             return envvar, logs_dir
         else:
             LABEL = "Brightway3"
@@ -101,8 +101,8 @@ class ProjectManager(Iterable):
             return data_dir, logs_dir
 
     def _create_base_directories(self) -> None:
-        create_dir(self._base_data_dir)
-        create_dir(self._base_logs_dir)
+        os.makedirs(self._base_data_dir, exist_ok=True)
+        os.makedirs(self._base_logs_dir, exist_ok=True)
 
     @property
     def current(self) -> str:
@@ -154,10 +154,10 @@ class ProjectManager(Iterable):
             self.dataset = ProjectDataset.get(ProjectDataset.name == name)
         except DoesNotExist:
             self.dataset = ProjectDataset.create(attributes=kwargs, name=name)
-        create_dir(self.dir)
+        os.makedirs(self.dir, exist_ok=True)
         for dir_name in self._basic_directories:
-            create_dir(self.dir / dir_name)
-        create_dir(self.logs_dir)
+            os.makedirs(self.dir / dir_name, exist_ok=True)
+        os.makedirs(self.logs_dir, exist_ok=True)
 
     def copy_project(self, new_name: str, switch: bool = True) -> None:
         """Copy current project to a new project named ``new_name``. If ``switch``,
@@ -174,7 +174,7 @@ class ProjectManager(Iterable):
         ).attributes
         ProjectDataset.create(attributes=project_data, name=new_name)
         shutil.copytree(self.dir, fp, ignore=lambda x, y: ["write-lock"])
-        create_dir(self._base_logs_dir / safe_filename(new_name))
+        os.makedirs(self._base_logs_dir / safe_filename(new_name), exist_ok=True)
         if switch:
             self.set_current(new_name)
 
@@ -184,7 +184,7 @@ class ProjectManager(Iterable):
 
         Returns ``False`` if directory can't be created."""
         fp = self.dir / str(name)
-        create_dir(fp)
+        os.makedirs(fp, exist_ok=True)
         if not fp.is_dir():
             return False
         return fp

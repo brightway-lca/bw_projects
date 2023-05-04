@@ -28,12 +28,6 @@ def safe_filename(string: Union[str, bytes], add_hash: bool = True) -> str:
         safe += "." + hashlib.md5(string).hexdigest()[:8]
     return safe
 
-
-def create_dir(dirpath: str) -> None:
-    "Create directory tree to `dirpath`; ignore if already exists"
-    os.makedirs(dirpath, exist_ok=True)
-
-
 def check_dir(directory: str) -> bool:
     """Returns ``True`` if given path is a directory and writeable,
     ``False`` otherwise."""
