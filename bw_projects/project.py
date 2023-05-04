@@ -179,21 +179,5 @@ class ProjectManager(Iterable):
                 self._project_name = None
         return self.current
 
-    def purge_deleted_directories(self) -> int:
-        """Delete project directories for projects which are no longer registered.
-
-        Returns number of directories deleted."""
-        registered = {slugify(obj.name) for obj in self}
-        bad_directories = [
-            self._base_data_dir / dirname
-            for dirname in os.listdir(self._base_data_dir)
-            if (self._base_data_dir / dirname).is_dir() and dirname not in registered
-        ]
-
-        for fp in bad_directories:
-            shutil.rmtree(fp)
-
-        return len(bad_directories)
-
 
 projects = ProjectManager()
