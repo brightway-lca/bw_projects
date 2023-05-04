@@ -1,9 +1,11 @@
+"""Test cases for the __project__ module."""
 import os
+import platform
 import tempfile
 
 import pytest
 
-from bw_projects import config, ProjectDataset
+from bw_projects import ProjectDataset
 from bw_projects.errors import NoActiveProject
 from bw_projects.project import ProjectManager
 
@@ -55,7 +57,7 @@ def test_repeatedly_set_name_same_value(tmpdir):
     assert "foo" in project
 
 
-@pytest.mark.skipif(config._windows, reason="Windows doesn't allow fun")
+@pytest.mark.skipif(platform.system() == "Windows", reason="Windows doesn't allow fun")
 def test_funny_project_names(tmpdir):
     project = ProjectManager(tmpdir)
     NAMES = [

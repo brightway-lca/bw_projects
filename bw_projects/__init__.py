@@ -2,13 +2,11 @@
 import importlib.metadata
 from typing import Union
 
-from bw_projects.configuration import config
 from bw_projects.project import ProjectDataset, projects
 from bw_projects.sqlite import SubstitutableDatabase
 
 __all__ = (
     "__version__",
-    "config",
     "projects",
     "ProjectDataset",
     "SubstitutableDatabase",

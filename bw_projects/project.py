@@ -8,7 +8,6 @@ import appdirs
 from peewee import DoesNotExist, Model, TextField
 from playhouse.sqlite_ext import JSONField
 
-from bw_projects import config
 from bw_projects.errors import NoActiveProject
 from bw_projects.filesystem import create_dir, maybe_path, safe_filename
 from bw_projects.sqlite import SubstitutableDatabase
@@ -143,16 +142,10 @@ class ProjectManager(Iterable):
         Returns output directory path.
 
         """
-        ep, pp = (
-            maybe_path(os.getenv("BRIGHTWAY_OUTPUT_DIR")),
-            hasattr(config, "p") and maybe_path(config.p.get("output_dir")),
-        )
+        ep = maybe_path(os.getenv("BRIGHTWAY_OUTPUT_DIR"))
         if ep and ep.is_dir():
             return ep
-        elif pp and pp.is_dir():
-            return pp
-        else:
-            return self.request_directory("output")
+        return self.request_directory("output")
 
     def create_project(self, name: str = None, **kwargs) -> None:
         name = name or self.current
