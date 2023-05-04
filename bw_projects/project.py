@@ -9,7 +9,7 @@ from peewee import DoesNotExist, Model, TextField
 from playhouse.sqlite_ext import JSONField
 
 from bw_projects.errors import NoActiveProject
-from bw_projects.filesystem import maybe_path, safe_filename
+from bw_projects.filesystem import safe_filename
 from bw_projects.sqlite import SubstitutableDatabase
 
 
@@ -41,7 +41,7 @@ class ProjectManager(Iterable):
         self._base_data_dir, self._base_logs_dir = self._get_base_directories(folder)
         self._create_base_directories()
         self.db = SubstitutableDatabase(
-            self._base_data_dir / "projects.db", [ProjectDataset]
+            f"{self._base_data_dir}/projects.db", [ProjectDataset]
         )
         self._project_name = None
 
@@ -79,26 +79,18 @@ class ProjectManager(Iterable):
     # ---- Internal functions for managing projects
     def _get_base_directories(self, folder: str = None) -> tuple[Path, Path]:
         if folder:
-            envvar = maybe_path(folder)
-            if not envvar.is_dir():
-                os.makedirs(envvar, exist_ok=True)
-            envvar = envvar.absolute()
-            logs_dir = envvar / "logs"
-            os.makedirs(logs_dir, exist_ok=True)
-            return envvar, logs_dir
+            envvar = folder
         elif os.getenv("BRIGHTWAY_DIR"):
-            envvar = maybe_path(os.getenv("BRIGHTWAY_DIR"))
-            if not envvar.is_dir():
-                os.makedirs(envvar, exist_ok=True)
-            envvar = envvar.absolute()
-            logs_dir = envvar / "logs"
-            os.makedirs(logs_dir, exist_ok=True)
-            return envvar, logs_dir
+            envvar = os.getenv("BRIGHTWAY_DIR")
         else:
-            LABEL = "Brightway3"
-            data_dir = Path(appdirs.user_data_dir(LABEL, "pylca"))
-            logs_dir = Path(appdirs.user_log_dir(LABEL, "pylca"))
+            label = "Brightway3"
+            data_dir = Path(appdirs.user_data_dir(label, "pylca"))
+            logs_dir = Path(appdirs.user_log_dir(label, "pylca"))
             return data_dir, logs_dir
+        os.makedirs(envvar, exist_ok=True)
+        logs_dir = f"{envvar}/logs"
+        os.makedirs(logs_dir, exist_ok=True)
+        return envvar, logs_dir
 
     def _create_base_directories(self) -> None:
         os.makedirs(self._base_data_dir, exist_ok=True)
@@ -142,8 +134,8 @@ class ProjectManager(Iterable):
         Returns output directory path.
 
         """
-        ep = maybe_path(os.getenv("BRIGHTWAY_OUTPUT_DIR"))
-        if ep and ep.is_dir():
+        ep = os.getenv("BRIGHTWAY_OUTPUT_DIR")
+        if ep and os.path.exists(ep):
             return ep
         return self.request_directory("output")
 

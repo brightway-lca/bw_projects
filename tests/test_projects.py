@@ -1,3 +1,4 @@
+"""Test cases for the __project__ module."""
 import os
 import random
 import shutil
@@ -5,13 +6,11 @@ import string
 import sys
 import tempfile
 import unittest
+from pathlib import Path
 
 from bw_projects import projects
 from bw_projects.errors import NoActiveProject
-from bw_projects.filesystem import (
-    check_dir,
-    safe_filename,
-)
+from bw_projects.filesystem import check_dir, safe_filename
 from bw_projects.project import ProjectManager
 
 
@@ -90,9 +89,9 @@ class TestProjects(unittest.TestCase):
         self.assertEqual(len(projects), 0)
         with self.assertRaises(NoActiveProject):
             projects.dir
-        self.assertTrue(projects._base_data_dir.is_relative_to(tmpdirname))
+        self.assertTrue(Path(projects._base_data_dir).is_relative_to(tmpdirname))
         self.assertFalse(
-            projects._base_data_dir.is_relative_to(os.getenv("BRIGHTWAY_DIR"))
+            Path(projects._base_data_dir).is_relative_to(os.getenv("BRIGHTWAY_DIR"))
         )
         del os.environ["BRIGHTWAY_DIR"]
 

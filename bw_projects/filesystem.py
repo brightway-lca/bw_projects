@@ -1,11 +1,8 @@
 import hashlib
-import re
 import os
+import re
 import unicodedata
-
 from typing import Union
-from pathlib import Path
-
 
 re_slugify = re.compile(r"[^\w\s-]", re.UNICODE)
 SUBSTITUTION_RE = re.compile(r"[^\w\-\.]")
@@ -28,11 +25,8 @@ def safe_filename(string: Union[str, bytes], add_hash: bool = True) -> str:
         safe += "." + hashlib.md5(string).hexdigest()[:8]
     return safe
 
+
 def check_dir(directory: str) -> bool:
     """Returns ``True`` if given path is a directory and writeable,
     ``False`` otherwise."""
     return os.path.isdir(directory) and os.access(directory, os.W_OK)
-
-
-def maybe_path(x: str) -> Path:
-    return Path(x) if x else x
