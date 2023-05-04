@@ -12,8 +12,9 @@ from slugify import slugify
 
 from bw_projects import projects
 from bw_projects.errors import NoActiveProject
-from bw_projects.filesystem import check_dir
 from bw_projects.project import ProjectManager
+
+from .conftest import check_dir
 
 
 class TestProjects(unittest.TestCase):
