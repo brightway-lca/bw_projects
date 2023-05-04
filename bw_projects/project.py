@@ -4,17 +4,12 @@ from collections.abc import Iterable
 from pathlib import Path
 
 import appdirs
-from peewee import DoesNotExist, Model, TextField
-from playhouse.sqlite_ext import JSONField
+from peewee import DoesNotExist
 from slugify import slugify
 
 from bw_projects.errors import NoActiveProjectError
-from bw_projects.sqlite import SubstitutableDatabase
-
-
-class ProjectDataset(Model):
-    name = TextField(index=True, unique=True)
-    attributes = JSONField()
+from bw_projects.helpers import DatabaseHelper
+from bw_projects.model import Project
 
 
 class ProjectManager(Iterable):
@@ -28,20 +23,20 @@ class ProjectManager(Iterable):
     def __init__(self, folder: str = None):
         self._base_data_dir, self._base_logs_dir = self._get_base_directories(folder)
         self._create_base_directories()
-        self.db = SubstitutableDatabase(
-            f"{self._base_data_dir}/projects.db", [ProjectDataset]
+        DatabaseHelper.init_db(
+            database_name=f"{self._base_data_dir}/projects.db", tables=[Project]
         )
         self._project_name = None
 
     def __iter__(self):
-        for project_ds in ProjectDataset.select():
+        for project_ds in Project.select():
             yield project_ds
 
     def __contains__(self, name: str) -> bool:
-        return ProjectDataset.select().where(ProjectDataset.name == name).count() > 0
+        return Project.select().where(Project.name == name).count() > 0
 
     def __len__(self) -> int:
-        return ProjectDataset.select().count()
+        return Project.select().count()
 
     def __repr__(self) -> str:
         if len(self) > 20:
@@ -130,9 +125,9 @@ class ProjectManager(Iterable):
         name = name or self.current
 
         try:
-            self.dataset = ProjectDataset.get(ProjectDataset.name == name)
+            self.dataset = Project.get(Project.name == name)
         except DoesNotExist:
-            self.dataset = ProjectDataset.create(attributes=kwargs, name=name)
+            self.dataset = Project.create(attributes=kwargs, name=name)
         os.makedirs(self.dir, exist_ok=True)
         for dir_name in self._basic_directories:
             os.makedirs(self.dir / dir_name, exist_ok=True)
@@ -170,7 +165,7 @@ class ProjectManager(Iterable):
         if victim not in self:
             raise ValueError("{} is not a project".format(victim))
 
-        ProjectDataset.delete().where(ProjectDataset.name == victim).execute()
+        Project.delete().where(Project.name == victim).execute()
 
         if delete_dir:
             dir_path = self._base_data_dir / slugify(victim)

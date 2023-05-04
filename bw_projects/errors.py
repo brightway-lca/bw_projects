@@ -1,4 +1,4 @@
-"""Exceptions module for bw_projects."""
+"""Exceptions for bw_projects."""
 
 
 class BWException(BaseException):

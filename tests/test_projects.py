@@ -12,6 +12,8 @@ from slugify import slugify
 
 from bw_projects import projects
 from bw_projects.errors import NoActiveProjectError
+from bw_projects.helpers import DatabaseHelper
+from bw_projects.model import Project
 from bw_projects.project import ProjectManager
 
 from .conftest import check_dir
@@ -24,7 +26,7 @@ class TestProjects(unittest.TestCase):
         temp_dir = Path(tempfile.mkdtemp())
         projects._base_data_dir = temp_dir / "data"
         projects._base_logs_dir = temp_dir / "logs"
-        projects.db.change_path(":memory:")
+        DatabaseHelper.init_db(":memory:", [Project])
         self.tempdir = temp_dir
 
         self.current = "".join(random.choices(string.ascii_lowercase, k=18))
@@ -119,17 +121,15 @@ class TestProjects(unittest.TestCase):
         self.assertFalse(check_dir(folder_1))
         project_1 = ProjectManager(folder_1)
         self.assertEqual(project_1.current, None)
+        DatabaseHelper.sqlite_database.close()
 
         folder_2 = "".join(random.choices(string.ascii_lowercase, k=8))
         self.assertFalse(check_dir(folder_2))
         project_2 = ProjectManager(folder_2)
         self.assertEqual(project_2.current, None)
+        DatabaseHelper.sqlite_database.close()
 
         self.assertNotEqual(project_1._base_data_dir, project_2._base_data_dir)
-
-        # FIXME: db connection should be automatically closed
-        project_1.db.db.close()
-        project_2.db.db.close()
 
         # Cleanup
         shutil.rmtree(project_1._base_data_dir)

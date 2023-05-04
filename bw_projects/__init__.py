@@ -2,14 +2,15 @@
 import importlib.metadata
 from typing import Union
 
-from bw_projects.project import ProjectDataset, projects
-from bw_projects.sqlite import SubstitutableDatabase
+from bw_projects.helpers import DatabaseHelper
+from bw_projects.model import Project
+from bw_projects.project import projects
 
 __all__ = (
     "__version__",
     "projects",
-    "ProjectDataset",
-    "SubstitutableDatabase",
+    "DatabaseHelper",
+    "Project",
 )
 
 

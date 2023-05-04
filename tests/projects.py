@@ -5,7 +5,7 @@ import tempfile
 
 import pytest
 
-from bw_projects import ProjectDataset
+from bw_projects import Project
 from bw_projects.errors import NoActiveProjectError
 from bw_projects.project import ProjectManager
 
@@ -243,7 +243,7 @@ def test_iterating_over_projects_no_error(tmpdir):
 def test_project_attributes(tmpdir):
     project = ProjectManager(tmpdir)
     project.set_current("test-pr", test=True, tmp=True)
-    dataset = ProjectDataset.get(ProjectDataset.name == "test-pr")
+    dataset = Project.get(Project.name == "test-pr")
     assert dataset
     assert dataset.attributes
     assert dataset.attributes["test"]
@@ -253,5 +253,5 @@ def test_project_attributes(tmpdir):
 def test_project_attributes_default(tmpdir):
     project = ProjectManager(tmpdir)
     project.set_current("default")
-    dataset = ProjectDataset.get(ProjectDataset.name == "default")
+    dataset = Project.get(Project.name == "default")
     assert dataset.attributes == {}
