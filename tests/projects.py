@@ -6,7 +6,7 @@ import tempfile
 import pytest
 
 from bw_projects import ProjectDataset
-from bw_projects.errors import NoActiveProject
+from bw_projects.errors import NoActiveProjectError
 from bw_projects.project import ProjectManager
 
 # -----------
@@ -35,9 +35,9 @@ def test_from_env_var():
 
 def test_default_directories_raise_exception(tmpdir):
     project = ProjectManager(tmpdir)
-    with pytest.raises(NoActiveProject):
+    with pytest.raises(NoActiveProjectError):
         project.dir
-    with pytest.raises(NoActiveProject):
+    with pytest.raises(NoActiveProjectError):
         project.logs_dir
 
 
@@ -83,9 +83,7 @@ def test_funny_project_names(tmpdir):
         try:
             project.set_current(name)
             assert [x for x in os.listdir(project.dir)]
-            print("This is OK:", name)
         except Exception:
-            print("This is not OK:", name)
             error_found = True
     if error_found:
         raise ValueError("Oops")
@@ -93,7 +91,7 @@ def test_funny_project_names(tmpdir):
 
 def test_default_request_directory_raises_exception(tmpdir):
     project = ProjectManager(tmpdir)
-    with pytest.raises(NoActiveProject):
+    with pytest.raises(NoActiveProjectError):
         project.request_directory("foo")
 
 
@@ -111,7 +109,7 @@ def test_request_directory(tmpdir):
 
 def test_delete_default_raises_exception(tmpdir):
     project = ProjectManager(tmpdir)
-    with pytest.raises(NoActiveProject):
+    with pytest.raises(NoActiveProjectError):
         project.delete_project()
 
 
@@ -243,7 +241,7 @@ def test_iterating_over_projects_no_error(tmpdir):
 
 def test_copy_without_project_raises_exception(tmpdir):
     project = ProjectManager(tmpdir)
-    with pytest.raises(NoActiveProject):
+    with pytest.raises(NoActiveProjectError):
         project.copy_project("another one")
 
 

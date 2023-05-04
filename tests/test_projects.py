@@ -11,7 +11,7 @@ from pathlib import Path
 from slugify import slugify
 
 from bw_projects import projects
-from bw_projects.errors import NoActiveProject
+from bw_projects.errors import NoActiveProjectError
 from bw_projects.project import ProjectManager
 
 from .conftest import check_dir
@@ -19,7 +19,14 @@ from .conftest import check_dir
 
 class TestProjects(unittest.TestCase):
     def setUp(self):
-        self.tempdir = projects._use_temp_directory()
+        projects._orig_base_data_dir = projects._base_data_dir
+        projects._orig_base_logs_dir = projects._base_logs_dir
+        temp_dir = Path(tempfile.mkdtemp())
+        projects._base_data_dir = temp_dir / "data"
+        projects._base_logs_dir = temp_dir / "logs"
+        projects.db.change_path(":memory:")
+        self.tempdir = temp_dir
+
         self.current = "".join(random.choices(string.ascii_lowercase, k=18))
         projects.set_current(self.current)
         self.assertEqual(self.current, projects.current)
@@ -76,7 +83,7 @@ class TestProjects(unittest.TestCase):
         projects = ProjectManager(tmpdirname)
         self.assertEqual(projects.current, None)
         self.assertEqual(len(projects), 0)
-        with self.assertRaises(NoActiveProject):
+        with self.assertRaises(NoActiveProjectError):
             projects.dir
 
     def test_project_with_folder_priority(self):
@@ -86,7 +93,7 @@ class TestProjects(unittest.TestCase):
         projects = ProjectManager(tmpdirname)
         self.assertEqual(projects.current, None)
         self.assertEqual(len(projects), 0)
-        with self.assertRaises(NoActiveProject):
+        with self.assertRaises(NoActiveProjectError):
             projects.dir
         self.assertTrue(Path(projects._base_data_dir).is_relative_to(tmpdirname))
         self.assertFalse(
@@ -103,7 +110,7 @@ class TestProjects(unittest.TestCase):
         self.assertTrue(check_dir(f"{projects._base_logs_dir}"))
         self.assertEqual(projects.current, None)
         self.assertEqual(len(projects), 0)
-        with self.assertRaises(NoActiveProject):
+        with self.assertRaises(NoActiveProjectError):
             projects.dir
         del os.environ["BRIGHTWAY_DIR"]
 

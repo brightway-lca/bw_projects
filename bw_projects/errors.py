@@ -1,10 +1,7 @@
+"""Exceptions module for bw_projects."""
 class BWException(BaseException):
-    """Base class for exceptions in Brightway"""
-
-    pass
+    """Base class for exceptions in Brightway."""
 
 
-class NoActiveProject(BWException):
-    """Current project is None"""
-
-    pass
+class NoActiveProjectError(BWException):
+    """No active project is set."""

@@ -1,6 +1,5 @@
 import os
 import shutil
-import tempfile
 from collections.abc import Iterable
 from pathlib import Path
 
@@ -9,22 +8,13 @@ from peewee import DoesNotExist, Model, TextField
 from playhouse.sqlite_ext import JSONField
 from slugify import slugify
 
-from bw_projects.errors import NoActiveProject
+from bw_projects.errors import NoActiveProjectError
 from bw_projects.sqlite import SubstitutableDatabase
 
 
 class ProjectDataset(Model):
     name = TextField(index=True, unique=True)
     attributes = JSONField()
-
-    def __str__(self):
-        return "Project: {}".format(self.name)
-
-    def __lt__(self, other):
-        if not isinstance(other, ProjectDataset):
-            raise TypeError
-        else:
-            return self.name.lower() < other.name.lower()
 
 
 class ProjectManager(Iterable):
@@ -34,8 +24,6 @@ class ProjectManager(Iterable):
         "lci",
         "processed",
     )
-    _is_temp_dir = False
-    read_only = False
 
     def __init__(self, folder: str = None):
         self._base_data_dir, self._base_logs_dir = self._get_base_directories(folder)
@@ -105,7 +93,6 @@ class ProjectManager(Iterable):
 
         # Need to allow writes when creating a new project
         # for new metadata stores
-        self.read_only = False
         self.create_project(name, **kwargs)
 
     # Public API
@@ -114,14 +101,14 @@ class ProjectManager(Iterable):
         if self.current:
             return Path(self._base_data_dir) / slugify(self.current)
         else:
-            raise NoActiveProject
+            raise NoActiveProjectError
 
     @property
     def logs_dir(self) -> Path:
         if self.current:
             return Path(self._base_logs_dir) / slugify(self.current)
         else:
-            raise NoActiveProject
+            raise NoActiveProjectError
 
     @property
     def output_dir(self) -> Path:
@@ -160,7 +147,7 @@ class ProjectManager(Iterable):
         if fp.exists():
             raise ValueError("Project directory already exists")
         if self.current is None:
-            raise NoActiveProject
+            raise NoActiveProjectError
         project_data = ProjectDataset.get(
             ProjectDataset.name == self.current
         ).attributes
@@ -181,34 +168,6 @@ class ProjectManager(Iterable):
             return False
         return fp
 
-    def _use_temp_directory(self) -> None:
-        """Point the ProjectManager towards a temporary directory instead of
-        `user_data_dir`.
-
-        Used exclusively for tests."""
-        if not self._is_temp_dir:
-            self._orig_base_data_dir = self._base_data_dir
-            self._orig_base_logs_dir = self._base_logs_dir
-        temp_dir = Path(tempfile.mkdtemp())
-        self._base_data_dir = temp_dir / "data"
-        self._base_logs_dir = temp_dir / "logs"
-        self.db.change_path(":memory:")
-        self._is_temp_dir = True
-        return temp_dir
-
-    def _restore_orig_directory(self) -> None:
-        """Point the ProjectManager back to original directories.
-
-        Used exclusively in tests."""
-        if not self._is_temp_dir:
-            return
-        self._base_data_dir = self._orig_base_data_dir
-        del self._orig_base_data_dir
-        self._base_logs_dir = self._orig_base_logs_dir
-        del self._orig_base_logs_dir
-        self.db.change_path(self._base_data_dir / "projects.db")
-        self._is_temp_dir = False
-
     def delete_project(self, name: str = None, delete_dir: bool = False) -> str:
         """Delete project ``name``, or the current project.
 
@@ -224,7 +183,7 @@ class ProjectManager(Iterable):
 
         Returns the current project."""
         if self._project_name is None:
-            raise NoActiveProject
+            raise NoActiveProjectError
 
         victim = name or self.current
         if victim not in self:
