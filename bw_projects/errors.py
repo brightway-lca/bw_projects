@@ -1,9 +1,9 @@
 """Exceptions for bw_projects."""
 
 
-class BWException(BaseException):
+class BWProjectsException(BaseException):
     """Base class for exceptions in Brightway."""
 
 
-class NoActiveProjectError(BWException):
-    """No active project is set."""
+class ProjectExistsError(BWProjectsException):
+    """A project with this name already exists."""

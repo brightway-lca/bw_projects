@@ -1,8 +1,8 @@
-"""Model classes for the bw_projects."""
-from peewee import Model, TextField
+"""Model classes for bw_projects."""
+from peewee import BooleanField, Model, SqliteDatabase, TextField
 from playhouse.sqlite_ext import JSONField
 
-from .helpers import DatabaseHelper
+SQLITE_DATABASE: SqliteDatabase = SqliteDatabase(None)
 
 
 class BaseModel(Model):
@@ -11,7 +11,7 @@ class BaseModel(Model):
     class Meta:
         """Meta class for all models."""
 
-        database = DatabaseHelper.sqlite_database
+        database = SQLITE_DATABASE
 
 
 class Project(BaseModel):
@@ -19,3 +19,7 @@ class Project(BaseModel):
 
     name = TextField(index=True, unique=True)
     attributes = JSONField()
+    deleted = BooleanField(default=False)
+
+    def __lt__(self, other):
+        return self.name < other.name

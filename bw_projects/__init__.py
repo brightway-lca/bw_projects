@@ -2,16 +2,10 @@
 import importlib.metadata
 from typing import Union
 
-from bw_projects.helpers import DatabaseHelper
-from bw_projects.model import Project
-from bw_projects.project import projects
+from .core import ProjectsManager
+from .model import Project
 
-__all__ = (
-    "__version__",
-    "projects",
-    "DatabaseHelper",
-    "Project",
-)
+__all__ = ("__version__", "Project", "ProjectsManager")
 
 
 def get_version_tuple() -> tuple:
