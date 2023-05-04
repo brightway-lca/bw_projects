@@ -234,33 +234,6 @@ def test_iterating_over_projects_no_error(tmpdir):
         assert x.name == project.current
 
 
-# ------------
-# Copy project
-# ------------
-
-
-def test_copy_without_project_raises_exception(tmpdir):
-    project = ProjectManager(tmpdir)
-    with pytest.raises(NoActiveProjectError):
-        project.copy_project("another one")
-
-
-def test_copy_project_switch_current(tmpdir):
-    project = ProjectManager(tmpdir)
-    project.set_current("foo")
-    assert project.current == "foo"
-    project.copy_project("another one")
-    assert project.current == "another one"
-
-
-def test_copy_project_no_switch(tmpdir):
-    project = ProjectManager(tmpdir)
-    project.set_current("foo")
-    project.copy_project("another one", switch=False)
-    assert project.current == "foo"
-    assert "another one" in project
-
-
 # TODO: purge delete directories
 
 
@@ -282,23 +255,3 @@ def test_project_attributes_default(tmpdir):
     project.set_current("default")
     dataset = ProjectDataset.get(ProjectDataset.name == "default")
     assert dataset.attributes == {}
-
-
-def test_project_attributes_copy_empty(tmpdir):
-    project = ProjectManager(tmpdir)
-    project.set_current("default")
-    project.copy_project("default-copy", switch=False)
-    dataset = ProjectDataset.get(ProjectDataset.name == "default-copy")
-    assert dataset.attributes == {}
-
-
-def test_project_attributes_copy_with_values(tmpdir):
-    project = ProjectManager(tmpdir)
-    project.set_current("test-pr", test=False, tmp=True, projects=[])
-    project.copy_project("test-pr-copy")
-    dataset = ProjectDataset.get(ProjectDataset.name == "test-pr-copy")
-    assert dataset
-    assert dataset.attributes
-    assert dataset.attributes["test"] is False
-    assert len(dataset.attributes["projects"]) == 0
-    assert dataset.attributes["tmp"]

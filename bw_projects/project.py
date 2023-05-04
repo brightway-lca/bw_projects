@@ -138,25 +138,6 @@ class ProjectManager(Iterable):
             os.makedirs(self.dir / dir_name, exist_ok=True)
         os.makedirs(self.logs_dir, exist_ok=True)
 
-    def copy_project(self, new_name: str, switch: bool = True) -> None:
-        """Copy current project to a new project named ``new_name``. If ``switch``,
-        switch to new project."""
-        if new_name in self:
-            raise ValueError("Project {} already exists".format(new_name))
-        fp = self._base_data_dir / slugify(new_name)
-        if fp.exists():
-            raise ValueError("Project directory already exists")
-        if self.current is None:
-            raise NoActiveProjectError
-        project_data = ProjectDataset.get(
-            ProjectDataset.name == self.current
-        ).attributes
-        ProjectDataset.create(attributes=project_data, name=new_name)
-        shutil.copytree(self.dir, fp, ignore=lambda x, y: ["write-lock"])
-        os.makedirs(self._base_logs_dir / slugify(new_name), exist_ok=True)
-        if switch:
-            self.set_current(new_name)
-
     def request_directory(self, name: str) -> Path:
         """Return the absolute path to the subdirectory ``dirname``,
         creating it if necessary.
