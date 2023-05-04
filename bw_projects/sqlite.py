@@ -23,16 +23,3 @@ class SubstitutableDatabase:
         self.db.close()
         self._filepath = filepath
         self._database = self._create_database()
-
-    def atomic(self):
-        return self.db.atomic()
-
-    def execute_sql(self, *args, **kwargs):
-        return self.db.execute_sql(*args, **kwargs)
-
-    def transaction(self):
-        return self.db.transaction()
-
-    def vacuum(self):
-        print("Vacuuming database ")
-        self.execute_sql("VACUUM;")
