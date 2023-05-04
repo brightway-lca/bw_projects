@@ -8,9 +8,11 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from slugify import slugify
+
 from bw_projects import projects
 from bw_projects.errors import NoActiveProject
-from bw_projects.filesystem import check_dir, safe_filename
+from bw_projects.filesystem import check_dir
 from bw_projects.project import ProjectManager
 
 
@@ -48,15 +50,11 @@ class TestProjects(unittest.TestCase):
         new_project_name = "".join(random.choices(string.ascii_lowercase, k=18))
         self.assertNotEqual(projects.current, new_project_name)
         self.assertFalse(
-            check_dir(
-                f"{self.projects._base_data_dir}/{safe_filename(new_project_name)}"
-            )
+            check_dir(f"{self.projects._base_data_dir}/{slugify(new_project_name)}")
         )
         self.projects.set_current(new_project_name)
         self.assertTrue(
-            check_dir(
-                f"{self.projects._base_data_dir}/{safe_filename(new_project_name)}"
-            )
+            check_dir(f"{self.projects._base_data_dir}/{slugify(new_project_name)}")
         )
 
     @unittest.skip("Don't run this test. It will clean up existing projects")

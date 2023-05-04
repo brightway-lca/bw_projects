@@ -7,9 +7,9 @@ from pathlib import Path
 import appdirs
 from peewee import DoesNotExist, Model, TextField
 from playhouse.sqlite_ext import JSONField
+from slugify import slugify
 
 from bw_projects.errors import NoActiveProject
-from bw_projects.filesystem import safe_filename
 from bw_projects.sqlite import SubstitutableDatabase
 
 
@@ -112,14 +112,14 @@ class ProjectManager(Iterable):
     @property
     def dir(self) -> Path:
         if self.current:
-            return Path(self._base_data_dir) / safe_filename(self.current)
+            return Path(self._base_data_dir) / slugify(self.current)
         else:
             raise NoActiveProject
 
     @property
     def logs_dir(self) -> Path:
         if self.current:
-            return Path(self._base_logs_dir) / safe_filename(self.current)
+            return Path(self._base_logs_dir) / slugify(self.current)
         else:
             raise NoActiveProject
 
@@ -156,7 +156,7 @@ class ProjectManager(Iterable):
         switch to new project."""
         if new_name in self:
             raise ValueError("Project {} already exists".format(new_name))
-        fp = self._base_data_dir / safe_filename(new_name)
+        fp = self._base_data_dir / slugify(new_name)
         if fp.exists():
             raise ValueError("Project directory already exists")
         if self.current is None:
@@ -166,7 +166,7 @@ class ProjectManager(Iterable):
         ).attributes
         ProjectDataset.create(attributes=project_data, name=new_name)
         shutil.copytree(self.dir, fp, ignore=lambda x, y: ["write-lock"])
-        os.makedirs(self._base_logs_dir / safe_filename(new_name), exist_ok=True)
+        os.makedirs(self._base_logs_dir / slugify(new_name), exist_ok=True)
         if switch:
             self.set_current(new_name)
 
@@ -233,7 +233,7 @@ class ProjectManager(Iterable):
         ProjectDataset.delete().where(ProjectDataset.name == victim).execute()
 
         if delete_dir:
-            dir_path = self._base_data_dir / safe_filename(victim)
+            dir_path = self._base_data_dir / slugify(victim)
             assert dir_path.is_dir(), "Can't find project directory"
             shutil.rmtree(dir_path)
 
@@ -248,7 +248,7 @@ class ProjectManager(Iterable):
         """Delete project directories for projects which are no longer registered.
 
         Returns number of directories deleted."""
-        registered = {safe_filename(obj.name) for obj in self}
+        registered = {slugify(obj.name) for obj in self}
         bad_directories = [
             self._base_data_dir / dirname
             for dirname in os.listdir(self._base_data_dir)
