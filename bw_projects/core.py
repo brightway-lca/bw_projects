@@ -15,7 +15,7 @@ class ProjectsManager(Iterable):
 
     def __init__(
         self,
-        dir_base: str,
+        dir_base: str = None,
         database_name: str = "projects.db",
         max_repr_len: int = 25,
         config: Configuration = Configuration(),

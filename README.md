@@ -1,29 +1,27 @@
 # bw_projects
 
+[![PyPI](https://img.shields.io/pypi/v/bw_projects.svg)][pypi status]
+[![Status](https://img.shields.io/pypi/status/bw_projects.svg)][pypi status]
+[![Python Version](https://img.shields.io/pypi/pyversions/bw_projects)][pypi status]
+[![License](https://img.shields.io/pypi/l/bw_projects)][license]
+
+[![Read the documentation at https://bw_projects.readthedocs.io/](https://img.shields.io/readthedocs/bw_projects/latest.svg?label=Read%20the%20Docs)][read the docs]
+[![Tests](https://github.com/brightway-lca/bw_projects/actions/workflows/python-test.yml/badge.svg)][tests]
+[![Codecov](https://codecov.io/gh/brightway-lca/bw_projects/branch/main/graph/badge.svg?token=ZVWBCITI4A)][codecov]
+
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)][pre-commit]
+[![Black](https://img.shields.io/badge/code%20style-black-000000.svg)][black]
+
+[pypi status]: https://pypi.org/project/bw_projects/
+[read the docs]: https://bw_projects.readthedocs.io/
+[tests]: https://github.com/brightway-lca/bw_projects/actions?workflow=Tests
+[codecov]: https://codecov.io/gh/brightway-lca/bw_projects
+[pre-commit]: https://github.com/pre-commit/pre-commit
+[black]: https://github.com/psf/black
+
 This is a library to manage subdirectories, so that work on a project can be isolated from other projects. It is designed for use with the [Brightway life cycle assessment](https://brightway.dev/) software framework, but has no dependencies on Brightway and can be used independently.
 
-Project metadata is stored in SQLite using the [Peewee ORM](http://docs.peewee-orm.com/en/latest/). The SQLite file is in the `base_directory`, and project data is stored in subdirectories. By default, [appdirs](https://github.com/ActiveState/appdirs) is used to create the `base_directory`, though this can be overridden.
-
-Example usage:
-
-```python
-
-from bw_projects import projects
-# Creates `projects.base_directory` if needed
-
-projects.current
->>> None
-
-projects.set_current("example")
-# Create SQLite database row with metadata, relative filepath, and project name
-# Creates `projects.base_directory` / `example` if needed
-
-projects.current
->>> "example"
-
-projects.dir
->>> pathlib.Path(`projects.base_directory` / `example`)
-```
+Project metadata is stored in SQLite using the [Peewee ORM](http://docs.peewee-orm.com/en/latest/). The SQLite file is in the `base_directory`, and project data is stored in subdirectories. By default, [platformdirs](https://github.com/platformdirs/platformdirs) is used to create the `base_directory`, though this can be overridden.
 
 ## Installation
 
@@ -31,95 +29,106 @@ Via pip or conda (`conda-forge` channel).
 
 Depends on:
 
-* [appdirs](https://github.com/ActiveState/appdirs)
 * [peewee](http://docs.peewee-orm.com/en/latest/)
+* [platformdirs](https://github.com/platformdirs/platformdirs)
+* [python_slugify](https://github.com/un33k/python-slugify)
 
 ## Usage
 
-### The `projects` class instance
+### Initializing the ProjectsManager
 
-`bw_projects` will always create an instance of `ProjectManager`, and make it available as as `projects`. This means that the `base_directory` is always created and populated with a SQLite database file.
+```python
+from bw_projects import ProjectsManager  # This doesn't create anything yet
 
-You can also create your own instances of `ProjectManager`.
 
-### Specifying the `base_directory`
+projects_manager = ProjectsManager()  # This gets default config and initializes directories and database
+```
 
-`bw_projects` will use the following, in order:
+### Overriding defaults
 
-* If you instantiate `ProjectManager` manually (instead of importing `projects`), you can pass a folder path.
-* The environment variable `BRIGHTWAY_DIR`. This directory is created if it doesn't yet exist.
-* The folder directory created by `appdirs.user_data_dir("bw_projects", "projects")` (OS-specific)
+```python
+## You can override default directory by providing a base directory in constructor
+## You can also override the default database name
+from bw_projects import ProjectsManager
+
+projects_manager = ProjectsManager(dir_base="<path/to/your/base/directory>", database_name="projects.db")
+```
+
+```python
+## You can also override configurations of default directory
+from bw_projects import Configuration, ProjectsManager
+
+config = Configuration(
+ 			app_name: str = "Brightway3",
+        	app_author: str = "pycla",
+        	dir_relative_logs: str = "logs",
+		)
+projects_manager = ProjectsManager(config=config)
+```
+
+### Callbacks
+
+```python
+## You can setup callbacks on projects creation, activation and deletion
+from bw_projects import ProjectsManager
+
+def callback_activate_project(manager: ProjectsManager, name: str):
+	print(f"Manager with {len(manager)} projects activated project {name}.")
+
+projects_manager = ProjectsManager(callbacks_activate_project=callback_activate_project)
+```
 
 ### Project management
 
-Create a project and switch to it:
-
-	`projects.set_current("<project_name>")`
-
-Create a project without switching:
-
-	`projects.create_project("<project_name>")`
-
-Iterate over projects:
-
 ```python
-
-for p in projects:
-	print(p.name, p.relative_path, p.metadata)
+## Create a project without activating it:
+projects_manager.create_project("<project_name>")
 ```
 
-Delete a project from SQLite file **without deleting the directory**:
-
-	`projects.delete_project("<project_name>")`
-
-Delete the current project from SQLite file **without deleting the directory**:
-
 ```python
-
-projects.delete_project()
-projects.current
->>> None
+## Create a project and activate it:
+projects_manager.create_project("<project_name>", activate=True)
 ```
 
-Delete a project from SQLite file **and delete the directory**:
-
-	`projects.delete_project("<project_name>", delete_dir=True)`
-
-## Testing
-
-In testing, you want an isolated base directory. You can manually instantiate `ProjectManager` with a temporary directory, or use `projects._use_temp_directory()`.
-
-You can use `projects._is_temp_dir` to test if you are in a test temporary directory.
-
-## Callbacks
-
-To execute additional code when a project is created, activated, deactivated, or deleted, you can register callbacks. Each callback should be a callable object which takes the following positional arguments in order:
-
-* name: str
-* relative_path: pathlib.Path instance
-* base_directory: pathlib.Path instance
-* metadata: dict
-
-Callbacks can be registered by appending them to `projects.callbacks.create`, `projects.callbacks.activate`, `projects.callbacks.deactivate`, and `projects.callbacks.delete`.
-
-Here is an example:
-
 ```python
-from bw_projects import projects
-
-def switcheroo(name, *args):
-	print(f"Hi {name}!")
-
-projects.callbacks.activate.append(switcheroo)
-
-projects.set_current("mom")
->>> "Hi mom!"
+## Iterate over projects:
+for project in projects_manager:
+	print(project.name, project.attributes)
 ```
 
-## Changes versus `brightway2`
+```python
+## Activate a project:
+projects_manager.activate("<project_name>")
+```
 
-No project is selected automatically at startup (i.e. `default` is not created and selected automatically). `projects.current` can be `None`.
+```python
+## Delete a project from SQLite database and deleting the directory:
+projects_manager.delete_project("<project_name>")
+```
 
-The project directory is stored in SQLite instead being generated by a function.
+```python
+## Delete a project from SQLite database without deleting the directory:
+projects_manager.delete_project("<project_name>", delete_dir=False)
+```
 
-Previously all metadata related to a project was stored under `data` key and we would store it using Pickle. We have moved this attribute to new key: `attributes` and have shifted to storing them as `json`.
+## Contributing
+
+Contributions are very welcome.
+To learn more, see the [Contributor Guide][Contributor Guide].
+
+## License
+
+Distributed under the terms of the [GPL 3.0 license][License],
+_bw_projects_ is free and open source software.
+
+## Issues
+
+If you encounter any problems,
+please [file an issue][Issue Tracker] along with a detailed description.
+
+
+<!-- github-only -->
+
+[License]: https://github.com/brightway-lca/bw_projects/blob/main/LICENSE
+[Contributor Guide]: https://github.com/brightway-lca/bw_projects/blob/main/CONTRIBUTING.md
+[Issue Tracker]: https://github.com/brightway-lca/bw_projects/issues
