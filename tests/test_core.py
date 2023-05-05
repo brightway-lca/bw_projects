@@ -42,17 +42,33 @@ def test_create_project_not_existing_no_activate(tmpdir) -> None:
     assert projects_manager.active_project is None
 
 
-def test_create_project_not_existing_activate(tmpdir) -> None:
-    """Tests creating non-existent project with activating."""
+def test_create_project_not_existing_activate_with_callbacks(tmpdir, capsys) -> None:
+    """Tests creating non-existent project with activating and callbacks."""
+
+    def callback_activate_project(manager: ProjectsManager, name: str):
+        print(f"Manager with {len(manager)} projects activated project {name}.")
+
+    def callback_create_project(manager: ProjectsManager, name: str):
+        print(f"Manager with {len(manager)} projects created project {name}.")
+
+    callback_activate_project_out = "Manager with 1 projects activated project foo."
+    callback_create_project_out = "Manager with 1 projects created project foo."
     project_name = "foo"
     project_attributes = {"bar": "baz"}
-    projects_manager = ProjectsManager(tmpdir)
+    projects_manager = ProjectsManager(
+        tmpdir,
+        callbacks_activate_project=[callback_activate_project],
+        callbacks_create_project=[callback_create_project],
+    )
     projects_manager.create_project(
         project_name, attributes=project_attributes, activate=True
     )
     assert DatabaseHelper.project_exists(project_name)
     assert projects_manager.active_project.name == project_name
     assert projects_manager.active_project.attributes == project_attributes
+
+    out, _ = capsys.readouterr()
+    assert out == f"{callback_activate_project_out}\n{callback_create_project_out}\n"
 
 
 def test_create_project_existing_not_okay_no_activate(tmpdir) -> None:
@@ -87,11 +103,21 @@ def test_delete_project_does_not_exist_not_exist_okay(tmpdir) -> None:
     assert not DatabaseHelper.project_exists(project_name)
 
 
-def test_delete_project_existing_and_active(tmpdir) -> None:
+def test_delete_project_existing_and_active_with_callbacks(tmpdir, capsys) -> None:
     """Tests deleting existent and active project."""
+
+    def callback_delete_project(manager: ProjectsManager, name: str):
+        print(f"Manager with {len(manager)} projects deleted project {name}.")
+
+    callback_delete_project_out = "Manager with 0 projects deleted project foo."
     project_name = "foo"
-    projects_manager = ProjectsManager(tmpdir)
+    projects_manager = ProjectsManager(
+        tmpdir, callbacks_delete_project=[callback_delete_project]
+    )
     projects_manager.create_project(project_name, activate=True)
     projects_manager.delete_project(project_name)
     assert not DatabaseHelper.project_exists(project_name)
     assert projects_manager.active_project is None
+
+    out, _ = capsys.readouterr()
+    assert out == f"{callback_delete_project_out}\n"

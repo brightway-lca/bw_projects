@@ -1,6 +1,6 @@
 """Core functionalities for bw_projects."""
 from collections.abc import Iterable
-from typing import Dict
+from typing import Callable, Dict, List, NoReturn
 
 from peewee import DoesNotExist
 
@@ -19,10 +19,29 @@ class ProjectsManager(Iterable):
         database_name: str = "projects.db",
         max_repr_len: int = 25,
         config: Configuration = Configuration(),
+        callbacks_activate_project: List[
+            Callable[["ProjectsManager", str], NoReturn]
+        ] = None,
+        callbacks_create_project: List[
+            Callable[["ProjectsManager", str], NoReturn]
+        ] = None,
+        callbacks_delete_project: List[
+            Callable[["ProjectsManager", str], NoReturn]
+        ] = None,
     ) -> None:
+        if callbacks_activate_project is None:
+            callbacks_activate_project = []
+        if callbacks_create_project is None:
+            callbacks_create_project = []
+        if callbacks_delete_project is None:
+            callbacks_delete_project = []
+
         self.file_helper = FileHelper(dir_base, config)
         self._max_repr_len = max_repr_len
         self._active_project: Project = None
+        self.callbacks_activate_project = callbacks_activate_project
+        self.callbacks_create_project = callbacks_create_project
+        self.callbacks_delete_project = callbacks_delete_project
         DatabaseHelper.init_db(self.file_helper.dir_base / database_name)
 
     def __iter__(self):
@@ -55,6 +74,8 @@ class ProjectsManager(Iterable):
     def activate_project(self, name: str) -> None:
         """Activates the project with the given name."""
         self._active_project = DatabaseHelper.get_project(name)
+        for callback in self.callbacks_activate_project:
+            callback(self, name)
 
     def create_project(
         self,
@@ -77,6 +98,8 @@ class ProjectsManager(Iterable):
 
         if activate:
             self.activate_project(name)
+        for callback in self.callbacks_create_project:
+            callback(self, name)
         return project
 
     def delete_project(
@@ -93,3 +116,5 @@ class ProjectsManager(Iterable):
             self.file_helper.delete_project_directory(name)
         if self._active_project.name == name:
             self._active_project = None
+        for callback in self.callbacks_delete_project:
+            callback(self, name)
