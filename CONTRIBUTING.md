@@ -1,20 +1,24 @@
 # Contributor Guide
 
 Thank you for your interest in improving this project.
-This project is open-source under the [MIT license] and
+This project is open-source under the [GPL 3.0][License] and
 welcomes contributions in the form of bug reports, feature requests, and pull requests.
 
 Here is a list of important resources for contributors:
 
-- [Code of Conduct]
-- [License]
-- [Source Code]
-- [Documentation]
-- [Issue Tracker]
+- [Source Code][Source Code]
+- [Documentation][Documentation]
+- [Issue Tracker][Issue Tracker]
+- [Code of Conduct][Code of Conduct]
+
+[License]: https://opensource.org/licenses/GPL-3.0
+[Source Code]: https://github.com/brightway-lca/bw_projects
+[Documentation]: https://bw_projects.readthedocs.io/
+[Issue Tracker]: https://github.com/brightway-lca/bw_projects/issues
 
 ## How to report a bug
 
-Report bugs on the [Issue Tracker].
+Report bugs on the [Issue Tracker][Issue Tracker].
 
 When filing an issue, make sure to answer these questions:
 
@@ -29,7 +33,7 @@ and/or steps to reproduce the issue.
 
 ## How to request a feature
 
-Request features on the [Issue Tracker].
+Request features on the [Issue Tracker][Issue Tracker].
 
 ## How to set up your development environment
 
@@ -72,7 +76,7 @@ $ pytest
 
 
 Unit tests are located in the _tests_ directory,
-and are written using the [pytest] testing framework.
+and are written using the [pytest][pytest] testing framework.
 
 [pytest]: https://pytest.readthedocs.io/
 
@@ -103,11 +107,8 @@ $ pip install pre-commit
 It is recommended to open an issue before starting work on anything.
 This will allow a chance to talk it over with the owners and validate your approach.
 
-[pull request]: https://github.com/brightway-lca/brightway-projects/pulls
-[License]: https://opensource.org/licenses/MIT
-[Source Code]: https://github.com/brightway-lca/brightway-projects
-[Documentation]: https://brightway-projects.readthedocs.io/
-[Issue Tracker]: https://github.com/brightway-lca/brightway-projects/issues
+[pytest]: https://pytest.readthedocs.io/
+[pull request]: https://github.com/brightway-lca/bw_projects/pulls
 
 
 <!-- github-only -->
