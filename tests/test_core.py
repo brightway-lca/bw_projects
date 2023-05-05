@@ -27,6 +27,28 @@ def test_contains_project(tmpdir) -> None:
     assert "foo" in projects_manager
 
 
+def test_repr(tmpdir) -> None:
+    """Tests representation of projects_manager."""
+    projects_manager = ProjectsManager(tmpdir)
+    assert (
+        repr(projects_manager) == "bw_projects manager with 0 projects, including:"
+    )  # No projects created yet.
+
+    projects = ["foo", "bar", "baz"]
+    for project in projects:
+        projects_manager.create_project(project)
+    assert (
+        repr(projects_manager)
+        == "bw_projects manager with 3 projects, including:\n\tbar\n\tbaz\n\tfoo"
+    )
+
+    projects_manager.max_repr_len = 2
+    assert repr(projects_manager) == (
+        "bw_projects manager with 3 projects, including:\n\tbar\n\tbaz\n\t...\n"
+        "To get full list of projects, use `list(ProjectsManager)`."
+    )
+
+
 def test_activate_project_does_not_exist(tmpdir) -> None:
     """Tests activating non-existent project."""
     with pytest.raises(DoesNotExist):

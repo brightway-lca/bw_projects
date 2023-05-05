@@ -37,11 +37,11 @@ class ProjectsManager(Iterable):
             callbacks_delete_project = []
 
         self.file_helper = FileHelper(dir_base, config)
-        self._max_repr_len = max_repr_len
-        self._active_project: Project = None
+        self.max_repr_len = max_repr_len
         self.callbacks_activate_project = callbacks_activate_project
         self.callbacks_create_project = callbacks_create_project
         self.callbacks_delete_project = callbacks_delete_project
+        self._active_project: Project = None
         DatabaseHelper.init_db(self.file_helper.dir_base / database_name)
 
     def __iter__(self):
@@ -55,12 +55,12 @@ class ProjectsManager(Iterable):
         return DatabaseHelper.get_projects_count()
 
     def __repr__(self) -> str:
-        projects = sorted([project.name for project in self])[: self._max_repr_len]
+        projects = sorted([project.name for project in self])[: self.max_repr_len]
         projects_fmt = "".join([f"\n\t{project}" for project in projects])
         repr_str = (
             f"bw_projects manager with {len(self)} projects, including:{projects_fmt}"
         )
-        if len(self) > self._max_repr_len:
+        if len(self) > self.max_repr_len:
             repr_str += (
                 "\n\t...\nTo get full list of projects, use `list(ProjectsManager)`."
             )
