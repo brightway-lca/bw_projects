@@ -66,6 +66,8 @@ def test_create_project_not_existing_activate_with_callbacks(tmpdir, capsys) -> 
     assert DatabaseHelper.project_exists(project_name)
     assert projects_manager.active_project.name == project_name
     assert projects_manager.active_project.attributes == project_attributes
+    assert tmpdir.join(project_name).check(dir=True)
+    assert tmpdir.join(project_name).join("logs").check(dir=True)
 
     out, _ = capsys.readouterr()
     assert out == f"{callback_activate_project_out}\n{callback_create_project_out}\n"
@@ -104,7 +106,7 @@ def test_delete_project_does_not_exist_not_exist_okay(tmpdir) -> None:
 
 
 def test_delete_project_existing_and_active_with_callbacks(tmpdir, capsys) -> None:
-    """Tests deleting existent and active project."""
+    """Tests deleting existent and active project with callbacks."""
 
     def callback_delete_project(manager: ProjectsManager, name: str):
         print(f"Manager with {len(manager)} projects deleted project {name}.")
@@ -118,6 +120,20 @@ def test_delete_project_existing_and_active_with_callbacks(tmpdir, capsys) -> No
     projects_manager.delete_project(project_name)
     assert not DatabaseHelper.project_exists(project_name)
     assert projects_manager.active_project is None
+    assert tmpdir.join(project_name).check(dir=False)
+    assert tmpdir.join(project_name).join("logs").check(dir=False)
 
     out, _ = capsys.readouterr()
     assert out == f"{callback_delete_project_out}\n"
+
+
+def test_delete_project_existing_and_active_without_deleting(tmpdir) -> None:
+    """Tests deleting existent and active project with no directory deleting."""
+    project_name = "foo"
+    projects_manager = ProjectsManager(tmpdir)
+    projects_manager.create_project(project_name, activate=True)
+    projects_manager.delete_project(project_name, delete_dir=False)
+    assert not DatabaseHelper.project_exists(project_name)
+    assert projects_manager.active_project is None
+    assert tmpdir.join(project_name).check(dir=True)
+    assert tmpdir.join(project_name).join("logs").check(dir=True)
