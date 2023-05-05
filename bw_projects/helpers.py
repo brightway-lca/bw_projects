@@ -1,11 +1,10 @@
 """Helper classes for bw_projects."""
-import os
 from pathlib import Path
-from typing import Dict, Final, List
+from typing import Dict
 
-import platformdirs
 from slugify import slugify
 
+from .config import Configuration
 from .model import SQLITE_DATABASE, Project
 
 
@@ -52,49 +51,38 @@ class DatabaseHelper:
 class FileHelper:
     """Helper class for file operations."""
 
-    APP_NAME: Final[str] = "Brightway3"
-    APP_AUTHOR: Final[str] = "pylca"
-    DEFAULT_DIR_BASE: Final[Path] = Path(
-        platformdirs.user_data_dir(APP_NAME, APP_AUTHOR)
-    )
-    DEFAULT_DIR_LOGS: Final[Path] = Path(
-        platformdirs.user_log_dir(APP_NAME, APP_AUTHOR)
-    )
-    DIR_RELATIVE_LOGS: Final[str] = "logs"
-
-    DIRS_BASIC: Final[List[str]] = [
-        "backups",
-        "intermediate",
-        "lci",
-        "processed",
-    ]
-
-    def __init__(self, dir_base: str) -> None:
+    def __init__(self, dir_base: str, config: Configuration) -> None:
+        self.dirs_relative_logs = config.dir_relative_logs
+        self.dirs_basic = config.dirs_basic
         if dir_base is None:
-            self.dir_base = self.DEFAULT_DIR_BASE
-            self.dir_logs = self.DEFAULT_DIR_LOGS
+            self.dir_base = config.dir_base
+            self.dir_logs = config.dir_logs
         else:
             self.dir_base = Path(dir_base)
-            self.dir_logs = self.dir_base / self.DIR_RELATIVE_LOGS
-        os.makedirs(self.dir_base, exist_ok=True)
-        os.makedirs(self.dir_logs, exist_ok=True)
+            self.dir_logs = self.dir_base / config.dir_relative_logs
+        self.dir_base.mkdir(parents=True, exist_ok=True)
+        self.dir_logs.mkdir(parents=True, exist_ok=True)
 
-    def _get_dir_name(self, name: str) -> str:
+    def _get_dir_name(self, name: str) -> Path:
         return self.dir_base / slugify(name)
 
     def create_project_directory(self, name: str, exists_ok: bool) -> str:
         """Creates a directory for the given project."""
         project_dir = self._get_dir_name(name)
-        os.makedirs(project_dir, exist_ok=exists_ok)
-        for dir_basic in self.DIRS_BASIC:
-            os.makedirs(project_dir / dir_basic, exist_ok=exists_ok)
-        os.makedirs(project_dir / self.DIR_RELATIVE_LOGS, exist_ok=exists_ok)
+        project_dir.mkdir(parents=True, exist_ok=exists_ok)
+        for dir_basic in self.dirs_basic:
+            full_dir_basic = project_dir / dir_basic
+            full_dir_basic.mkdir(parents=True, exist_ok=exists_ok)
+        dir_logs = project_dir / self.dirs_relative_logs
+        dir_logs.mkdir(parents=True, exist_ok=exists_ok)
         return project_dir
 
     def delete_project_directory(self, name: str) -> None:
         """Deletes the directory for the given project."""
         project_dir = self._get_dir_name(name)
-        for dir_basic in self.DIRS_BASIC:
-            os.rmdir(project_dir / dir_basic)
-        os.rmdir(project_dir / self.DIR_RELATIVE_LOGS)
-        os.rmdir(project_dir)
+        for dir_basic in self.dirs_basic:
+            full_dir_basic = project_dir / dir_basic
+            full_dir_basic.rmdir()
+        dir_logs = project_dir / self.dirs_relative_logs
+        dir_logs.rmdir()
+        project_dir.rmdir()

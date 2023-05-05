@@ -1,11 +1,10 @@
 """Core functionalities for bw_projects."""
-import os
-
 from collections.abc import Iterable
 from typing import Dict
 
 from peewee import DoesNotExist
 
+from .config import Configuration
 from .errors import ProjectExistsError
 from .helpers import DatabaseHelper, FileHelper
 from .model import Project
@@ -15,9 +14,13 @@ class ProjectsManager(Iterable):
     """Manages projects."""
 
     def __init__(
-            self, dir_base: str, database_name: str = "projects.db", max_repr_len: int = 10
-        ) -> None:
-        self.file_helper = FileHelper(dir_base)
+        self,
+        dir_base: str,
+        database_name: str = "projects.db",
+        max_repr_len: int = 25,
+        config: Configuration = Configuration(),
+    ) -> None:
+        self.file_helper = FileHelper(dir_base, config)
         self._max_repr_len = max_repr_len
         self._active_project: Project = None
         DatabaseHelper.init_db(self.file_helper.dir_base / database_name)
@@ -33,11 +36,15 @@ class ProjectsManager(Iterable):
         return DatabaseHelper.get_projects_count()
 
     def __repr__(self) -> str:
-        projects = sorted([project.name for project in self])[:self._max_repr_len]
+        projects = sorted([project.name for project in self])[: self._max_repr_len]
         projects_fmt = "".join([f"\n\t{project}" for project in projects])
-        repr_str = f"bw_projects manager with {len(self)} projects, including:{projects_fmt}"
+        repr_str = (
+            f"bw_projects manager with {len(self)} projects, including:{projects_fmt}"
+        )
         if len(self) > self._max_repr_len:
-            repr_str += "\n\t...\nTo get full list of projects, use `list(ProjectsManager)`."
+            repr_str += (
+                "\n\t...\nTo get full list of projects, use `list(ProjectsManager)`."
+            )
         return repr_str
 
     @property
@@ -50,9 +57,12 @@ class ProjectsManager(Iterable):
         self._active_project = DatabaseHelper.get_project(name)
 
     def create_project(
-            self, name: str = None, attributes: Dict = None,
-            exists_ok: bool = False, activate: bool = False
-        ) -> Project:
+        self,
+        name: str = None,
+        attributes: Dict = None,
+        exists_ok: bool = False,
+        activate: bool = False,
+    ) -> Project:
         """Creates a project with the given name."""
         if attributes is None:
             attributes = {}
@@ -69,7 +79,9 @@ class ProjectsManager(Iterable):
             self.activate_project(name)
         return project
 
-    def delete_project(self, name: str, not_exist_ok: bool = True, delete_dir: bool = True) -> None:
+    def delete_project(
+        self, name: str, not_exist_ok: bool = True, delete_dir: bool = True
+    ) -> None:
         """Deletes the project with the given name."""
         if not DatabaseHelper.project_exists(name):
             if not not_exist_ok:

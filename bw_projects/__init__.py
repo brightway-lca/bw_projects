@@ -2,10 +2,19 @@
 import importlib.metadata
 from typing import Union
 
+from .config import Configuration
 from .core import ProjectsManager
+from .errors import BWProjectsException, ProjectExistsError
 from .model import Project
 
-__all__ = ("__version__", "Project", "ProjectsManager")
+__all__ = (
+    "__version__",
+    "BWProjectsException",
+    "Configuration",
+    "Project",
+    "ProjectExistsError",
+    "ProjectsManager",
+)
 
 
 def get_version_tuple() -> tuple:

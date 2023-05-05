@@ -1,13 +1,10 @@
 """Test cases for the __core__ module."""
-import os
-from pathlib import Path
-
 import pytest
 from peewee import DoesNotExist
 
 from bw_projects.core import ProjectsManager
 from bw_projects.errors import ProjectExistsError
-from bw_projects.helpers import DatabaseHelper, FileHelper
+from bw_projects.helpers import DatabaseHelper
 
 
 def test_itr_projects(tmpdir) -> None:
@@ -50,7 +47,9 @@ def test_create_project_not_existing_activate(tmpdir) -> None:
     project_name = "foo"
     project_attributes = {"bar": "baz"}
     projects_manager = ProjectsManager(tmpdir)
-    projects_manager.create_project(project_name, attributes=project_attributes, activate=True)
+    projects_manager.create_project(
+        project_name, attributes=project_attributes, activate=True
+    )
     assert DatabaseHelper.project_exists(project_name)
     assert projects_manager.active_project.name == project_name
     assert projects_manager.active_project.attributes == project_attributes
