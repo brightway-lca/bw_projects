@@ -17,6 +17,7 @@ class ProjectsManager(Iterable):
         self,
         dir_base: str = None,
         database_name: str = "projects.db",
+        output_dir_name: str = None,
         max_repr_len: int = 25,
         config: Configuration = Configuration(),
         callbacks_activate_project: List[
@@ -36,7 +37,7 @@ class ProjectsManager(Iterable):
         if callbacks_delete_project is None:
             callbacks_delete_project = []
 
-        self.file_helper = FileHelper(dir_base, config)
+        self.file_helper = FileHelper(dir_base, output_dir_name, config)
         self.max_repr_len = max_repr_len
         self.callbacks_activate_project = callbacks_activate_project
         self.callbacks_create_project = callbacks_create_project

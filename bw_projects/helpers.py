@@ -51,17 +51,27 @@ class DatabaseHelper:
 class FileHelper:
     """Helper class for file operations."""
 
-    def __init__(self, dir_base: str, config: Configuration) -> None:
-        self.dirs_relative_logs = config.dir_relative_logs
-        self.dirs_basic = config.dirs_basic
+    def __init__(
+        self, dir_base: str, output_dir_name: str, config: Configuration
+    ) -> None:
         if dir_base is None:
             self.dir_base = config.dir_base
             self.dir_logs = config.dir_logs
         else:
             self.dir_base = Path(dir_base)
             self.dir_logs = self.dir_base / config.dir_relative_logs
+
+        if output_dir_name is None:
+            self.output_dir = config.output_dir
+        else:
+            self.output_dir = Path(output_dir_name)
+
+        self.dirs_relative_logs = config.dir_relative_logs
+        self.dirs_basic = config.dirs_basic
+
         self.dir_base.mkdir(parents=True, exist_ok=True)
         self.dir_logs.mkdir(parents=True, exist_ok=True)
+        self.output_dir.mkdir(parents=True, exist_ok=True)
 
     def _get_dir_name(self, name: str) -> Path:
         return self.dir_base / slugify(name)
