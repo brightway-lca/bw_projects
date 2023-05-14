@@ -17,9 +17,9 @@ class DatabaseHelper:
         SQLITE_DATABASE.create_tables([Project])
 
     @staticmethod
-    def create_project(name: str, attributes: Dict) -> Project:
+    def create_project(name: str, path: str, attributes: Dict) -> Project:
         """Creates a project with the given name."""
-        return Project.create(name=name, attributes=attributes)
+        return Project.create(name=name, dir_path=path, attributes=attributes)
 
     @staticmethod
     def delete_project(name: str) -> None:

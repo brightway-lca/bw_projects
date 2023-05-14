@@ -98,8 +98,12 @@ class ProjectsManager(Iterable):
 
         project_name = ProjectsManager.get_clean_project_name(name)
         if not DatabaseHelper.project_exists(project_name):
-            self.file_helper.create_project_directory(project_name, exist_ok)
-            project = DatabaseHelper.create_project(project_name, attributes)
+            project_path = self.file_helper.create_project_directory(
+                project_name, exist_ok
+            )
+            project = DatabaseHelper.create_project(
+                project_name, project_path, attributes
+            )
         else:
             if not exist_ok:
                 raise ProjectExistsError(project_name)

@@ -82,12 +82,14 @@ def test_create_project_not_existing_activate_with_callbacks(tmpdir, capsys) -> 
         callbacks_activate_project=[callback_activate_project],
         callbacks_create_project=[callback_create_project],
     )
+    clean_project_name = projects_manager.get_clean_project_name(project_name)
     projects_manager.create_project(
         project_name, attributes=project_attributes, activate=True
     )
     assert DatabaseHelper.project_exists(project_name)
-    assert projects_manager.active_project.name == project_name
+    assert projects_manager.active_project.name == clean_project_name
     assert projects_manager.active_project.attributes == project_attributes
+    assert projects_manager.active_project.dir_path == tmpdir.join(clean_project_name)
     assert tmpdir.join(project_name).check(dir=True)
     assert tmpdir.join(project_name).join("logs").check(dir=True)
 
