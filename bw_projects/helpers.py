@@ -2,8 +2,6 @@
 from pathlib import Path
 from typing import Dict
 
-from slugify import slugify
-
 from .config import Configuration
 from .model import SQLITE_DATABASE, Project
 
@@ -74,7 +72,7 @@ class FileHelper:
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
     def _get_dir_name(self, name: str) -> Path:
-        return self.dir_base / slugify(name)
+        return self.dir_base / name
 
     def create_project_directory(self, name: str, exists_ok: bool) -> str:
         """Creates a directory for the given project."""

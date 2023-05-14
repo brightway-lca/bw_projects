@@ -3,6 +3,7 @@ from collections.abc import Iterable
 from typing import Callable, Dict, List, NoReturn
 
 from peewee import DoesNotExist
+from slugify import slugify
 
 from .config import Configuration
 from .errors import ProjectExistsError
@@ -67,6 +68,11 @@ class ProjectsManager(Iterable):
             )
         return repr_str
 
+    @staticmethod
+    def get_clean_project_name(name: str) -> str:
+        """Changes project name to a file-friendly name."""
+        return slugify(name)
+
     @property
     def active_project(self) -> Project:
         """Returns the active project."""
@@ -74,9 +80,10 @@ class ProjectsManager(Iterable):
 
     def activate_project(self, name: str) -> None:
         """Activates the project with the given name."""
-        self._active_project = DatabaseHelper.get_project(name)
+        project_name = ProjectsManager.get_clean_project_name(name)
+        self._active_project = DatabaseHelper.get_project(project_name)
         for callback in self.callbacks_activate_project:
-            callback(self, name)
+            callback(self, project_name)
 
     def create_project(
         self,
@@ -89,33 +96,35 @@ class ProjectsManager(Iterable):
         if attributes is None:
             attributes = {}
 
-        if not DatabaseHelper.project_exists(name):
-            self.file_helper.create_project_directory(name, exists_ok)
-            project = DatabaseHelper.create_project(name, attributes)
+        project_name = ProjectsManager.get_clean_project_name(name)
+        if not DatabaseHelper.project_exists(project_name):
+            self.file_helper.create_project_directory(project_name, exists_ok)
+            project = DatabaseHelper.create_project(project_name, attributes)
         else:
             if not exists_ok:
-                raise ProjectExistsError
-            project = DatabaseHelper.get_project(name)
+                raise ProjectExistsError(project_name)
+            project = DatabaseHelper.get_project(project_name)
 
         if activate:
-            self.activate_project(name)
+            self.activate_project(project_name)
         for callback in self.callbacks_create_project:
-            callback(self, name)
+            callback(self, project_name)
         return project
 
     def delete_project(
         self, name: str, not_exist_ok: bool = True, delete_dir: bool = True
     ) -> None:
         """Deletes the project with the given name."""
-        if not DatabaseHelper.project_exists(name):
+        project_name = ProjectsManager.get_clean_project_name(name)
+        if not DatabaseHelper.project_exists(project_name):
             if not not_exist_ok:
                 raise DoesNotExist
             return
 
-        DatabaseHelper.delete_project(name)
+        DatabaseHelper.delete_project(project_name)
         if delete_dir:
-            self.file_helper.delete_project_directory(name)
-        if self._active_project.name == name:
+            self.file_helper.delete_project_directory(project_name)
+        if self._active_project.name == project_name:
             self._active_project = None
         for callback in self.callbacks_delete_project:
-            callback(self, name)
+            callback(self, project_name)

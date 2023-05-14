@@ -104,6 +104,14 @@ def test_create_project_existing_not_okay_no_activate(tmpdir) -> None:
         projects_manager.create_project(project_name)
 
 
+def test_create_project_slugify_same_name(tmpdir) -> None:
+    """Tests creating new project but slugify produces name of existing project."""
+    projects_manager = ProjectsManager(tmpdir)
+    projects_manager.create_project("Компьютер")
+    with pytest.raises(ProjectExistsError):
+        projects_manager.create_project("kompiuter")
+
+
 def test_create_project_existing_okay_no_activate(tmpdir) -> None:
     """Tests creating existent project but existing is okay without activating."""
     project_name = "foo"
