@@ -1,4 +1,5 @@
 """Helper classes for bw_projects."""
+import shutil
 from pathlib import Path
 from typing import Dict
 
@@ -88,9 +89,4 @@ class FileHelper:
     def delete_project_directory(self, name: str) -> None:
         """Deletes the directory for the given project."""
         project_dir = self._get_dir_name(name)
-        for dir_basic in self.dirs_basic:
-            full_dir_basic = project_dir / dir_basic
-            full_dir_basic.rmdir()
-        dir_logs = project_dir / self.dirs_relative_logs
-        dir_logs.rmdir()
-        project_dir.rmdir()
+        shutil.rmtree(project_dir)
