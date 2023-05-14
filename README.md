@@ -128,7 +128,7 @@ To learn more, see the [Contributor Guide][Contributor Guide].
 
 ## License
 
-Distributed under the terms of the [GPL 3.0 license][License],
+Distributed under the terms of the [BSD-2-Clause license][License],
 _bw_projects_ is free and open source software.
 
 ## Issues

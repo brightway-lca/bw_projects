@@ -1,7 +1,7 @@
 # Contributor Guide
 
 Thank you for your interest in improving this project.
-This project is open-source under the [GPL 3.0][License] and
+This project is open-source under the [BSD-2-Clause][License] and
 welcomes contributions in the form of bug reports, feature requests, and pull requests.
 
 Here is a list of important resources for contributors:
@@ -11,7 +11,7 @@ Here is a list of important resources for contributors:
 - [Issue Tracker][Issue Tracker]
 - [Code of Conduct][Code of Conduct]
 
-[License]: https://opensource.org/licenses/GPL-3.0
+[License]: https://opensource.org/license/bsd-2-clause/
 [Source Code]: https://github.com/brightway-lca/bw_projects
 [Documentation]: https://bw_projects.readthedocs.io/
 [Issue Tracker]: https://github.com/brightway-lca/bw_projects/issues
