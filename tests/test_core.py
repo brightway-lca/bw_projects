@@ -131,7 +131,7 @@ def test_delete_project_does_not_exist_not_exist_not_okay(tmpdir) -> None:
 def test_delete_project_does_not_exist_not_exist_okay(tmpdir) -> None:
     """Tests deleting non-existent project but not existing is okay."""
     project_name = "foo"
-    ProjectsManager(tmpdir).delete_project(project_name)
+    ProjectsManager(tmpdir).delete_project(project_name, not_exist_ok=True)
     assert not DatabaseHelper.project_exists(project_name)
 
 

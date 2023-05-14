@@ -112,7 +112,7 @@ class ProjectsManager(Iterable):
         return project
 
     def delete_project(
-        self, name: str, not_exist_ok: bool = True, delete_dir: bool = True
+        self, name: str, not_exist_ok: bool = False, delete_dir: bool = True
     ) -> None:
         """Deletes the project with the given name."""
         project_name = ProjectsManager.get_clean_project_name(name)
