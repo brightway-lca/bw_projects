@@ -1,4 +1,7 @@
 """Model classes for bw_projects."""
+import json
+from typing import Dict
+
 from peewee import Model, SqliteDatabase, TextField
 from playhouse.sqlite_ext import JSONField
 
@@ -17,9 +20,15 @@ class BaseModel(Model):
 class Project(BaseModel):
     """Project model class."""
 
+    @staticmethod
+    def _attributes_dumps(value: Dict[str, str]) -> str:
+        if value is not None and not isinstance(value, Dict):
+            raise TypeError(value)
+        return json.dumps(value)
+
     name = TextField(index=True, unique=True)
     dir_path = TextField()
-    attributes = JSONField()
+    attributes = JSONField(json_dumps=_attributes_dumps)
 
     def __lt__(self, other):
         return self.name < other.name
