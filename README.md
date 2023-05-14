@@ -72,8 +72,8 @@ projects_manager = ProjectsManager(config=config)
 ## You can setup callbacks on projects creation, activation and deletion
 from bw_projects import ProjectsManager
 
-def callback_activate_project(manager: ProjectsManager, name: str):
-	print(f"Manager with {len(manager)} projects activated project {name}.")
+def callback_activate_project(manager: ProjectsManager, name: str, attributes: Dict[str, str], dir_path: str):
+	print(f"Manager with {len(manager)} projects activated project {name} with {attributes} and {dir_path}.")
 
 projects_manager = ProjectsManager(callbacks_activate_project=callback_activate_project)
 ```

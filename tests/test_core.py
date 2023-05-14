@@ -1,4 +1,6 @@
 """Test cases for the __core__ module."""
+from typing import Dict
+
 import pytest
 from peewee import DoesNotExist
 
@@ -67,16 +69,33 @@ def test_create_project_not_existing_no_activate(tmpdir) -> None:
 def test_create_project_not_existing_activate_with_callbacks(tmpdir, capsys) -> None:
     """Tests creating non-existent project with activating and callbacks."""
 
-    def callback_activate_project(manager: ProjectsManager, name: str):
-        print(f"Manager with {len(manager)} projects activated project {name}.")
+    def callback_activate_project(
+        manager: ProjectsManager, name: str, attributes: Dict[str, str], dir_path: str
+    ):
+        print(
+            f"Manager with {len(manager)} projects activated project {name} "
+            f"with {attributes} and {dir_path}."
+        )
 
-    def callback_create_project(manager: ProjectsManager, name: str):
-        print(f"Manager with {len(manager)} projects created project {name}.")
+    def callback_create_project(
+        manager: ProjectsManager, name: str, attributes: Dict[str, str], dir_path: str
+    ):
+        print(
+            f"Manager with {len(manager)} projects created project {name} "
+            f"with {attributes} and {dir_path}."
+        )
 
-    callback_activate_project_out = "Manager with 1 projects activated project foo."
-    callback_create_project_out = "Manager with 1 projects created project foo."
     project_name = "foo"
     project_attributes = {"bar": "baz"}
+    dir_path = tmpdir.join(project_name)
+    callback_activate_project_out = (
+        f"Manager with 1 projects activated project foo with {project_attributes} "
+        f"and {dir_path}."
+    )
+    callback_create_project_out = (
+        f"Manager with 1 projects created project foo with {project_attributes} "
+        f"and {dir_path}."
+    )
     projects_manager = ProjectsManager(
         tmpdir,
         callbacks_activate_project=[callback_activate_project],
@@ -140,11 +159,19 @@ def test_delete_project_does_not_exist_not_exist_okay(tmpdir) -> None:
 def test_delete_project_existing_and_active_with_callbacks(tmpdir, capsys) -> None:
     """Tests deleting existent and active project with callbacks."""
 
-    def callback_delete_project(manager: ProjectsManager, name: str):
-        print(f"Manager with {len(manager)} projects deleted project {name}.")
+    def callback_delete_project(
+        manager: ProjectsManager, name: str, attributes: Dict[str, str], dir_path: str
+    ):
+        print(
+            f"Manager with {len(manager)} projects deleted project {name} "
+            f"with {attributes} and {dir_path}."
+        )
 
-    callback_delete_project_out = "Manager with 0 projects deleted project foo."
     project_name = "foo"
+    dir_path = tmpdir.join(project_name)
+    callback_delete_project_out = (
+        f"Manager with 0 projects deleted project foo with {{}} and {dir_path}."
+    )
     projects_manager = ProjectsManager(
         tmpdir, callbacks_delete_project=[callback_delete_project]
     )

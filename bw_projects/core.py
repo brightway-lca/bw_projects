@@ -22,13 +22,13 @@ class ProjectsManager(Iterable):
         max_repr_len: int = 25,
         config: Configuration = Configuration(),
         callbacks_activate_project: List[
-            Callable[["ProjectsManager", str], NoReturn]
+            Callable[["ProjectsManager", str, Dict[str, str], str], NoReturn]
         ] = None,
         callbacks_create_project: List[
-            Callable[["ProjectsManager", str], NoReturn]
+            Callable[["ProjectsManager", str, Dict[str, str], str], NoReturn]
         ] = None,
         callbacks_delete_project: List[
-            Callable[["ProjectsManager", str], NoReturn]
+            Callable[["ProjectsManager", str, Dict[str, str], str], NoReturn]
         ] = None,
     ) -> None:
         if callbacks_activate_project is None:
@@ -83,7 +83,12 @@ class ProjectsManager(Iterable):
         project_name = ProjectsManager.get_clean_project_name(name)
         self._active_project = DatabaseHelper.get_project(project_name)
         for callback in self.callbacks_activate_project:
-            callback(self, project_name)
+            callback(
+                self,
+                project_name,
+                self._active_project.attributes,
+                self._active_project.dir_path,
+            )
 
     def create_project(
         self,
@@ -112,7 +117,7 @@ class ProjectsManager(Iterable):
         if activate:
             self.activate_project(project_name)
         for callback in self.callbacks_create_project:
-            callback(self, project_name)
+            callback(self, project_name, project.attributes, project.dir_path)
         return project
 
     def delete_project(
@@ -124,11 +129,11 @@ class ProjectsManager(Iterable):
             if not not_exist_ok:
                 raise DoesNotExist
             return
-
+        project = DatabaseHelper.get_project(project_name)
         DatabaseHelper.delete_project(project_name)
         if delete_dir:
             self.file_helper.delete_project_directory(project_name)
         if self._active_project.name == project_name:
             self._active_project = None
         for callback in self.callbacks_delete_project:
-            callback(self, project_name)
+            callback(self, project_name, project.attributes, project.dir_path)
