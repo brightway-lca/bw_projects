@@ -8,6 +8,12 @@ from playhouse.sqlite_ext import JSONField
 SQLITE_DATABASE: SqliteDatabase = SqliteDatabase(None)
 
 
+def _attributes_dumps(value: Dict[str, str]) -> str:
+    if value is not None and not isinstance(value, Dict):
+        raise TypeError(value)
+    return json.dumps(value)
+
+
 class BaseModel(Model):
     """Base model class for all models."""
 
@@ -19,12 +25,6 @@ class BaseModel(Model):
 
 class Project(BaseModel):
     """Project model class."""
-
-    @staticmethod
-    def _attributes_dumps(value: Dict[str, str]) -> str:
-        if value is not None and not isinstance(value, Dict):
-            raise TypeError(value)
-        return json.dumps(value)
 
     name = TextField(index=True, unique=True)
     dir_path = TextField()
