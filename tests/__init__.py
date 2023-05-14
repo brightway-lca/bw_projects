@@ -1,1 +1,1 @@
-"""Test suite for the brightway_projects package."""
+"""Test suite for the bw_projects package."""
