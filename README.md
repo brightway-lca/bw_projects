@@ -5,7 +5,7 @@
 [![Python Version](https://img.shields.io/pypi/pyversions/bw_projects)][pypi status]
 [![License](https://img.shields.io/pypi/l/bw_projects)][license]
 
-[![Read the documentation at https://bw_projects.readthedocs.io/](https://img.shields.io/readthedocs/bw_projects/latest.svg?label=Read%20the%20Docs)][read the docs]
+<!-- [![Read the documentation at https://bw_projects.readthedocs.io/](https://img.shields.io/readthedocs/bw_projects/latest.svg?label=Read%20the%20Docs)][read the docs] -->
 [![Tests](https://github.com/brightway-lca/bw_projects/actions/workflows/python-test.yml/badge.svg)][tests]
 [![Codecov](https://codecov.io/gh/brightway-lca/bw_projects/branch/main/graph/badge.svg?token=ZVWBCITI4A)][codecov]
 
@@ -13,13 +13,13 @@
 [![Black](https://img.shields.io/badge/code%20style-black-000000.svg)][black]
 
 [pypi status]: https://pypi.org/project/bw_projects/
-[read the docs]: https://bw_projects.readthedocs.io/
+<!-- [read the docs]: https://bw_projects.readthedocs.io/ -->
 [tests]: https://github.com/brightway-lca/bw_projects/actions?workflow=Tests
 [codecov]: https://codecov.io/gh/brightway-lca/bw_projects
 [pre-commit]: https://github.com/pre-commit/pre-commit
 [black]: https://github.com/psf/black
 
-This is a library to manage subdirectories, so that work on a project can be isolated from other projects. It is designed for use with the [Brightway life cycle assessment](https://brightway.dev/) software framework, but has no dependencies on Brightway and can be used independently.
+This is a library to manage subdirectories, so that work on a project can be isolated from other projects. It is designed for use with the [Brightway life cycle assessment](https://brightway.dev/) software framework, but has no dependencies on Brightway and can be used on its own.
 
 Project metadata is stored in SQLite using the [Peewee ORM](http://docs.peewee-orm.com/en/latest/). The SQLite file is in the `base_directory`, and project data is stored in subdirectories. By default, [platformdirs](https://github.com/platformdirs/platformdirs) is used to create the `base_directory`, though this can be overridden.
 
