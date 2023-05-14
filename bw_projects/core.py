@@ -89,7 +89,7 @@ class ProjectsManager(Iterable):
         self,
         name: str = None,
         attributes: Dict = None,
-        exists_ok: bool = False,
+        exist_ok: bool = False,
         activate: bool = False,
     ) -> Project:
         """Creates a project with the given name."""
@@ -98,10 +98,10 @@ class ProjectsManager(Iterable):
 
         project_name = ProjectsManager.get_clean_project_name(name)
         if not DatabaseHelper.project_exists(project_name):
-            self.file_helper.create_project_directory(project_name, exists_ok)
+            self.file_helper.create_project_directory(project_name, exist_ok)
             project = DatabaseHelper.create_project(project_name, attributes)
         else:
-            if not exists_ok:
+            if not exist_ok:
                 raise ProjectExistsError(project_name)
             project = DatabaseHelper.get_project(project_name)
 

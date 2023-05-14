@@ -117,7 +117,7 @@ def test_create_project_existing_okay_no_activate(tmpdir) -> None:
     project_name = "foo"
     projects_manager = ProjectsManager(tmpdir)
     projects_manager.create_project(project_name)
-    projects_manager.create_project(project_name, exists_ok=True)
+    projects_manager.create_project(project_name, exist_ok=True)
     assert DatabaseHelper.project_exists(project_name)
     assert projects_manager.active_project is None
 
