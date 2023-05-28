@@ -27,7 +27,8 @@ class Project(BaseModel):
     """Project model class."""
 
     name = TextField(index=True, unique=True)
-    dir_path = TextField()
+    dir_data = TextField()
+    dir_logs = TextField()
     attributes = JSONField(json_dumps=_attributes_dumps)
 
     def __lt__(self, other):

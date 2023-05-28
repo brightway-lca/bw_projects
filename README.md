@@ -51,7 +51,7 @@ projects_manager = ProjectsManager()  # This gets default config and initializes
 ## You can also override the default database name
 from bw_projects import ProjectsManager
 
-projects_manager = ProjectsManager(dir_base="<path/to/your/base/directory>", database_name="projects.db")
+projects_manager = ProjectsManager(dir_base_data="<path/to/your/base/directory>", database_name="projects.db")
 ```
 
 ```python
@@ -61,7 +61,6 @@ from bw_projects import Configuration, ProjectsManager
 config = Configuration(
  			app_name: str = "Brightway3",
         	app_author: str = "pycla",
-        	dir_relative_logs: str = "logs",
 		)
 projects_manager = ProjectsManager(config=config)
 ```
