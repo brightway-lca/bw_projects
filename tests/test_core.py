@@ -128,7 +128,7 @@ def test_create_project_not_existing_activate_with_callbacks(base_dirs, capsys) 
         callbacks_activate_project=[callback_activate_project],
         callbacks_create_project=[callback_create_project],
     )
-    clean_project_name = projects_manager.get_clean_project_name(project_name)
+    clean_project_name = projects_manager.get_clean_directory_name(project_name)
     projects_manager.create_project(
         project_name, attributes=project_attributes, activate=True
     )
@@ -292,3 +292,14 @@ def test_copy_project_existing_dirs_exist_ok_and_switch(
             dirs_exist_ok=True,
             switch=True,
         )
+
+
+def test_request_directory(projects_manager: ProjectsManager) -> None:
+    """Tests requesting a directory."""
+    dirname = "bar"
+    project_name = "foo"
+    projects_manager.create_project(project_name, activate=True)
+    assert (
+        projects_manager.request_directory(dirname)
+        == projects_manager.data_dir / dirname
+    )

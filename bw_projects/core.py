@@ -1,5 +1,7 @@
 """Core functionalities for bw_projects."""
+import os
 from collections.abc import Iterable
+from pathlib import Path
 from typing import Callable, Dict, List, NoReturn
 
 from peewee import DoesNotExist
@@ -78,7 +80,7 @@ class ProjectsManager(Iterable):
         return repr_str
 
     @staticmethod
-    def get_clean_project_name(name: str) -> str:
+    def get_clean_directory_name(name: str) -> str:
         """Changes project name to a file-friendly name."""
         return slugify(name)
 
@@ -104,7 +106,7 @@ class ProjectsManager(Iterable):
 
     def activate_project(self, name: str) -> None:
         """Activates the project with the given name."""
-        project_name = ProjectsManager.get_clean_project_name(name)
+        project_name = ProjectsManager.get_clean_directory_name(name)
         self._active_project = DatabaseHelper.get_project(project_name)
         for callback in self.callbacks_activate_project:
             callback(
@@ -125,7 +127,7 @@ class ProjectsManager(Iterable):
         if attributes is None:
             attributes = {}
 
-        project_name = ProjectsManager.get_clean_project_name(name)
+        project_name = ProjectsManager.get_clean_directory_name(name)
         if not DatabaseHelper.project_exists(project_name):
             data_path, logs_path = self.file_helper.create_project_directory(
                 project_name, exist_ok
@@ -148,7 +150,7 @@ class ProjectsManager(Iterable):
         self, name: str, not_exist_ok: bool = False, delete_dir: bool = True
     ) -> None:
         """Deletes the project with the given name."""
-        project_name = ProjectsManager.get_clean_project_name(name)
+        project_name = ProjectsManager.get_clean_directory_name(name)
         if not DatabaseHelper.project_exists(project_name):
             if not not_exist_ok:
                 raise DoesNotExist
@@ -168,7 +170,7 @@ class ProjectsManager(Iterable):
         """Copy current project to a new project named ``new_name``.
         If ``switch``, switches to new project. Defaults to ``True``."""
 
-        project_name = ProjectsManager.get_clean_project_name(new_name)
+        project_name = ProjectsManager.get_clean_directory_name(new_name)
         if project_name in self:
             raise ProjectExistsError(project_name)
 
@@ -184,3 +186,10 @@ class ProjectsManager(Iterable):
         for callback in self.callbacks_copy_project:
             callback(self, project_name, project.attributes, project.dir_data)
         return project
+
+    def request_directory(self, dirname: str) -> Path:
+        """Return the clean absolute path to the subdirectory ``dirname``,
+        creating it if necessary."""
+        abs_path = self.data_dir / self.get_clean_directory_name(dirname)
+        os.makedirs(abs_path, exist_ok=True)
+        return abs_path

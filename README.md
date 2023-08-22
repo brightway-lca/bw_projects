@@ -84,7 +84,7 @@ projects_manager = ProjectsManager(callbacks_activate_project=callback_activate_
 ```python
 ## Before calling any project-management feature, the project name is slugified
 ## You can get the new name of the project by running:
-project = projects_manager.get_clean_project_name("Компьютер")
+project = projects_manager.get_clean_directory_name("Компьютер")
 project
 >> kompiuter
 ```
