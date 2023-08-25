@@ -1,7 +1,4 @@
 """bw_projects."""
-import importlib.metadata
-from typing import Union
-
 from .config import Configuration
 from .core import ProjectsManager
 from .errors import BWProjectsException, ProjectExistsError
@@ -16,21 +13,4 @@ __all__ = (
     "ProjectsManager",
 )
 
-
-def get_version_tuple() -> tuple:
-    """Returns version as (major, minor, micro)."""
-
-    def as_integer(version: str) -> Union[int, str]:
-        """Tries parsing version else returns as is."""
-        try:
-            return int(version)
-        except ValueError:  # pragma: no cover
-            return version  # pragma: no cover
-
-    return tuple(
-        as_integer(v)
-        for v in importlib.metadata.version("bw_projects").strip().split(".")
-    )
-
-
-__version__ = get_version_tuple()
+__version__ = "2.1.0"
